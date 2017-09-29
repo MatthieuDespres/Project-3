@@ -1,5 +1,6 @@
-//: Playground - noun: a place where people can play
+class Weapon {
+}
 
-import Cocoa
-
-var str = "Hello, playground"
+enum WeaponCategory: String {
+    case sword = "Épée"
+}
