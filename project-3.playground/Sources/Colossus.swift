@@ -12,6 +12,13 @@ public class Colossus: Warrior {
         healthMax = Colossus.colossusHealthMax
         weapon = Colossus.createBaseWeapon()
     }
+    public func checkUse(weapon: Weapon)-> Bool {
+        if weapon.category == Weapon.Category.shield {
+            return true
+        } else {
+            return false
+        }
+    }
     //===============================
     // MARK: Private Methods
     //===============================

@@ -3,7 +3,7 @@ public class Weapon {
     //===============================
     // MARK: - Stored Properties
     //===============================
-    private let category: Category
+    public let category: Category
     private let material: Material
     private let totem: Totem
     //===============================
@@ -23,11 +23,19 @@ public class Weapon {
         case stick = "Bâton"
         case shield = "Bouclier"
         case ax = "Hache"
+        static var random: Category {
+            let category = [Category.sword, Category.stick, Category.shield, Category.ax]
+            return category[Int(arc4random_uniform(UInt32(category.count)))]
+        }
     }
     public enum Material: String {
         case wood = "en bois"
         case iron = "de fer"
         case diamond = "de diamant"
+        static var random: Material {
+            let material = [Material.wood, Material.iron, Material.diamond]
+            return material[Int(arc4random_uniform(UInt32(material.count)))]
+        }
     }
     private enum Totem: String {
         case owl = "de la chouette"
@@ -38,7 +46,7 @@ public class Weapon {
         case eagle = "de l'aigle"
         case pony = "du poney"
         case doowy = "de Doowy l'oeuvre d'art"
-        static var random: Totem{
+        static var random: Totem {
             let totems = [Totem.owl, Totem.panda, Totem.weasel, Totem.mongoose, Totem.rat, Totem.eagle, Totem.pony, Totem.doowy]
             return totems[Int(arc4random_uniform(UInt32(totems.count)))]
         }
@@ -50,6 +58,9 @@ public class Weapon {
         self.category = category
         self.material = material
         self.totem = Totem.random
+    }
+    public static func createRandom()-> Weapon {
+        return Weapon(category: Category.random, material: Material.random)
     }
     //===============================
     // MARK: Private Methods

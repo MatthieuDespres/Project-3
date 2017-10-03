@@ -38,12 +38,39 @@ nain.weapon.name
 nain.weapon.power
 nain.isAlive
 
-// Modification des points de vie du nain pour les tests
-nain.health = 11
-
 
 // Le nain en prend une.
 combatant.attack(target: nain)
+nain.name
+nain.health
+nain.weapon.name
+nain.weapon.power
+nain.isAlive
+
+var arme: Weapon
+arme = Weapon(category: Weapon.Category.sword, material: Weapon.Material.diamond)
+arme.name
+arme.power
+var baton = Weapon(category: Weapon.Category.stick, material: Weapon.Material.diamond)
+
+combatant.checkUse(weapon: arme)
+colosse.checkUse(weapon: arme)
+nain.checkUse(weapon: arme)
+mage.checkUse(weapon: arme)
+mage.equip(weapon: baton)
+
+combatant.equip(weapon: arme)
+combatant.weapon.name
+combatant.weapon.power
+
+combatant.attack(target: nain)
+nain.name
+nain.health
+nain.weapon.name
+nain.weapon.power
+nain.isAlive
+
+mage.heal(target: nain)
 nain.name
 nain.health
 nain.weapon.name

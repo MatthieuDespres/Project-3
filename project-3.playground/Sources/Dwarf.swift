@@ -12,6 +12,13 @@ public class Dwarf: Warrior {
         healthMax = Dwarf.dwarfHealthMax
         weapon = Dwarf.createBaseWeapon()
     }
+    public func checkUse(weapon: Weapon)-> Bool {
+        if weapon.category == Weapon.Category.ax {
+            return true
+        } else {
+            return false
+        }
+    }
     //===============================
     // MARK: Private Methods
     //===============================

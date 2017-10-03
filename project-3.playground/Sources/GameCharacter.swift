@@ -25,6 +25,9 @@ public class GameCharacter {
         weapon = GameCharacter.createBaseWeapon()
         isAlive = true
     }
+    public func equip(weapon: Weapon) {
+        self.weapon = weapon
+    }
     //===============================
     // MARK: Private Methods
     //===============================

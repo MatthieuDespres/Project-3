@@ -17,6 +17,13 @@ public class Magus: GameCharacter {
             target.health += getHealPoint(target: target)
         }
     }
+    public func checkUse(weapon: Weapon)-> Bool {
+        if weapon.category == Weapon.Category.stick {
+            return true
+        } else {
+            return false
+        }
+    }
     //===============================
     // MARK: Private Methods
     //===============================

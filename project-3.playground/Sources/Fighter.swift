@@ -12,6 +12,13 @@ public class Fighter: Warrior {
         healthMax = Fighter.fighterHealthMax
         weapon = Fighter.createBaseWeapon()
     }
+    public func checkUse(weapon: Weapon)-> Bool {
+        if weapon.category == Weapon.Category.sword {
+            return true
+        } else {
+            return false
+        }
+    }
     //===============================
     // MARK: Private Methods
     //===============================
