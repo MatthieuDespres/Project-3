@@ -1,52 +1,35 @@
 import Foundation
 public class Weapon {
     //===============================
-    // MARK: - Stored properties
+    // MARK: - Stored Properties
     //===============================
-    private let weaponCategory: WeaponCategory
-    private let weaponMaterial: WeaponMaterial
-    private let weaponTotem: WeaponTotem
-    
+    private let category: Category
+    private let material: Material
+    private let totem: Totem
     //===============================
-    // MARK: - Calculated properties
+    // MARK: Calculated Properties
     //===============================
-    // Calculate the power of the weapon according to its material and its category.
     public var power: Int {
-        var power: Int = 0
-        switch weaponCategory {
-        case .sword:
-            power = 10
-        case .stick:
-            power = 20
-        case .shield:
-            power = 5
-        case .ax:
-            power = 20
-        }
-        switch weaponMaterial {
-        case .wood:
-            power += 0
-        case .iron:
-            power += 5
-        case .diamond:
-            power += 10
-        }
-        return power
+        return getCategoryPower() + getMaterialPower()
     }
-    // Generate weapon name considering weapon properties.
     public var name: String {
-        return "\(weaponCategory.rawValue) \(weaponMaterial.rawValue) \(weaponTotem.rawValue)"
+        return "\(category.rawValue) \(material.rawValue) \(totem.rawValue)"
     }
-    
     //===============================
     // MARK: - Enumeration
     //===============================
-    /* If I want to create new totem :
-     * 1- Create a new enum case.
-     * 2- Add correspondig case on the switch.
-     * 3- Add 1 to the constant "nbDifferentTotems".
-     */
-    private enum WeaponTotem: String {
+    public enum Category: String {
+        case sword = "Épée"
+        case stick = "Bâton"
+        case shield = "Bouclier"
+        case ax = "Hache"
+    }
+    public enum Material: String {
+        case wood = "en bois"
+        case iron = "de fer"
+        case diamond = "de diamant"
+    }
+    private enum Totem: String {
         case owl = "de la chouette"
         case panda = "du panda"
         case weasel = "de la belette"
@@ -55,40 +38,42 @@ public class Weapon {
         case eagle = "de l'aigle"
         case pony = "du poney"
         case doowy = "de Doowy l'oeuvre d'art"
-        
-        // Gives a random totem.
-        static func randomTotem() -> WeaponTotem {
-            let nbDifferentTotems: Int = 8
-            let indexTotem: Int = Int(arc4random_uniform(UInt32(nbDifferentTotems)))
-            switch indexTotem {
-            case 1:
-                return .owl
-            case 2:
-                return .panda
-            case 3:
-                return .weasel
-            case 4:
-                return .mongoose
-            case 5:
-                return .rat
-            case 6:
-                return .eagle
-            case 7:
-                return.pony
-            case 8:
-                return .doowy
-            default:
-                return .doowy
-            }
+        static var random: Totem{
+            let totems = [Totem.owl, Totem.panda, Totem.weasel, Totem.mongoose, Totem.rat, Totem.eagle, Totem.pony, Totem.doowy]
+            return totems[Int(arc4random_uniform(UInt32(totems.count)))]
         }
     }
-    
     //===============================
-    // MARK: - Methods
+    // MARK: - Public Methods
     //===============================
-    public init(weaponCategory: WeaponCategory, weaponMaterial: WeaponMaterial) {
-        self.weaponCategory = weaponCategory
-        self.weaponMaterial = weaponMaterial
-        self.weaponTotem = WeaponTotem.randomTotem()
+    public init(category: Category, material: Material) {
+        self.category = category
+        self.material = material
+        self.totem = Totem.random
+    }
+    //===============================
+    // MARK: Private Methods
+    //===============================
+    private func getCategoryPower()-> Int {
+        switch category {
+        case .sword:
+            return 10
+        case .stick:
+            return 20
+        case .shield:
+            return 5
+        case .ax:
+            return 20
+        }
+    }
+    private func getMaterialPower()-> Int {
+        switch material {
+        case .wood:
+            return 0
+        case .iron:
+            return 5
+        case .diamond:
+            return 10
+        }
     }
 }
