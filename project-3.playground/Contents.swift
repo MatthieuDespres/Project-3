@@ -1,6 +1,6 @@
 //Importation de foundration pour le random.
 import Foundation
-
+import PlaygroundSupport
 
 // Classe Weapon
 // Portée : Interne(proprieté et méthodes sauf weaponTotem qui est privée) (par défaut dans swift donc je précise pas)
