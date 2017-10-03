@@ -3,15 +3,27 @@ public class GameCharacter {
     // MARK: - Stored Properties
     //===============================
     public let name: String
-    public var health: Int
+    public var health: Int {
+        didSet {
+            isAlive = getLifeStatus(health: health)
+        }
+    }
     public var weapon: Weapon
+    public var healthMax: Int
+    public var isAlive: Bool
+    private static let characterHealthMax: Int = 0
+    //===============================
+    // MARK: Calculated Properties
+    //===============================
     //===============================
     // MARK: - Public Methods
     //===============================
     public init(name: String) {
         self.name = name
-        health = 0
+        health = GameCharacter.characterHealthMax
+        healthMax = GameCharacter.characterHealthMax
         weapon = GameCharacter.createBaseWeapon()
+        isAlive = true
     }
     //===============================
     // MARK: Private Methods
@@ -19,13 +31,12 @@ public class GameCharacter {
     private static func createBaseWeapon()-> Weapon {
         return Weapon(category: Weapon.Category.sword, material: Weapon.Material.wood)
     }
+    private func getLifeStatus(health: Int)-> Bool {
+        if health > 0 {
+            return true
+        }
+        else {
+            return false
+        }
+    }
 }
-
-/*
- Utilisé proprieté calculer pour la santé. (dans les classes filles) pour éviter le overheal et le over damage.
- pas plus de point de vie que ne le permet la classe du personnage.
- pas de point de vie en dessous de 0.
- 
- 
- 
- */
