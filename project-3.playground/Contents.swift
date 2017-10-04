@@ -38,41 +38,12 @@ nain.weapon.name
 nain.weapon.power
 nain.isAlive
 
+var tableauEquipe = [AnyObject]()
+tableauEquipe.append(mage)
+tableauEquipe.append(combatant)
+tableauEquipe.append(nain)
+var equipe: Team
+equipe = Team(player: "Jean Guy", characters: tableauEquipe)
+equipe.player
+equipe.nbCharacterAlive
 
-// Le nain en prend une.
-combatant.attack(target: nain)
-nain.name
-nain.health
-nain.weapon.name
-nain.weapon.power
-nain.isAlive
-
-var arme: Weapon
-arme = Weapon(category: Weapon.Category.sword, material: Weapon.Material.diamond)
-arme.name
-arme.power
-var baton = Weapon(category: Weapon.Category.stick, material: Weapon.Material.diamond)
-
-combatant.checkUse(weapon: arme)
-colosse.checkUse(weapon: arme)
-nain.checkUse(weapon: arme)
-mage.checkUse(weapon: arme)
-mage.equip(weapon: baton)
-
-combatant.equip(weapon: arme)
-combatant.weapon.name
-combatant.weapon.power
-
-combatant.attack(target: nain)
-nain.name
-nain.health
-nain.weapon.name
-nain.weapon.power
-nain.isAlive
-
-mage.heal(target: nain)
-nain.name
-nain.health
-nain.weapon.name
-nain.weapon.power
-nain.isAlive
