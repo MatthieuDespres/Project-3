@@ -13,8 +13,14 @@ public class GameCharacter {
     public var isAlive: Bool
     private static let characterHealthMax: Int = 0
     //===============================
-    // MARK: Calculated Properties
+    // MARK: - Enumeration
     //===============================
+    public enum Job: String {
+        case fighter = "combatant"
+        case magus = "mage"
+        case colossus = "colosse"
+        case dwarf = "nain"
+    }
     //===============================
     // MARK: - Public Methods
     //===============================

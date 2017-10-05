@@ -12,9 +12,12 @@ public class Magus: GameCharacter {
         healthMax = Magus.magusHealthMax
         weapon = Magus.createBaseWeapon()
     }
-    public func heal(target: GameCharacter) {
+    public func heal(target: GameCharacter)-> Round.ActionStatus {
         if target.isAlive {
             target.health += getHealPoint(target: target)
+            return Round.ActionStatus.noError
+        } else {
+            return Round.ActionStatus.healDeadError
         }
     }
     public func checkUse(weapon: Weapon)-> Bool {
