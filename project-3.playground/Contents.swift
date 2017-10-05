@@ -35,6 +35,7 @@ func afficherScore(equipe1: Team, equipe2: Team) {
     afficheScoreEquipe(equipe: equipe1)
     retourLignes(nbLignes: 1)
     afficheScoreEquipe(equipe: equipe2)
+    retourLignes(nbLignes: 1)
 }
 func afficheScoreEquipe(equipe: Team) {
     print(equipe.player)
@@ -59,8 +60,14 @@ var equipe2 = createTeam2()
 //Affichage des scores.
 afficherScore(equipe1: equipe1, equipe2: equipe2)
 
+var round1: Round
+round1 = Round(activeTeam: equipe1, targetTeam: equipe2, activeCharacter: (equipe1.characters[1] as! Fighter), targetCharacter: (equipe2.characters[0] as! Magus), actionType: Round.ActionType.heal)
+round1.executeAction()
+afficherScore(equipe1: equipe1, equipe2: equipe2)
+
 // A FAIRE :
-// tester tout les fonctionnalité de round
-// tester toute les erreur possible lors des ataque ou heal
-
-
+/*
+ * Verrifier que le personage actif appartien bien a l'équipe active et que le personage ciblé appartien bien a l'équipe ciblé.
+ * Dans l'ataque faire la verrif attaque sois meme en premier.
+ * Dans le heal verrifier "warriorHealError" avant "healEnemyError"
+ */
