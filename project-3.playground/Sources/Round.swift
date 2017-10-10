@@ -75,25 +75,28 @@ public class Round {
     // TODO: A SIMPLIFIER LES 2 FONCTIONS
     //===============================
     private func attack()-> Round.ActionStatus {
-        if !isTeamMate {
+        if activeCharacter.name != targetCharacter.name {
             if activeCharacter is Warrior {
-                return (activeCharacter as! Warrior).attack(target: targetCharacter)
+                if !isTeamMate {
+                    return (activeCharacter as! Warrior).attack(target: targetCharacter)
+                } else {
+                    return Round.ActionStatus.attackTeamMateError
+                }
             } else {
                 return Round.ActionStatus.magusAttackError
-            }
-        } else {
-            return Round.ActionStatus.attackTeamMateError
-        }
+            }        } else {
+            return Round.ActionStatus.attackHimself
+        } 
     }
     private func heal()-> Round.ActionStatus {
-        if isTeamMate {
-            if activeCharacter is Magus {
+        if activeCharacter is Magus {
+            if isTeamMate {
                 return (activeCharacter as! Magus).heal(target: targetCharacter)
             } else {
-                return Round.ActionStatus.warriorHealError
+                return Round.ActionStatus.healEnemyError
             }
         } else {
-            return Round.ActionStatus.healEnemyError
+            return Round.ActionStatus.warriorHealError
         }
     }
 }

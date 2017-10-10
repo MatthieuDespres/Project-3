@@ -61,13 +61,12 @@ var equipe2 = createTeam2()
 afficherScore(equipe1: equipe1, equipe2: equipe2)
 
 var round1: Round
-round1 = Round(activeTeam: equipe1, targetTeam: equipe2, activeCharacter: (equipe1.characters[1] as! Fighter), targetCharacter: (equipe2.characters[0] as! Magus), actionType: Round.ActionType.heal)
+round1 = Round(activeTeam: equipe1, targetTeam: equipe2, activeCharacter: (equipe1.characters[1] as! GameCharacter), targetCharacter: (equipe2.characters[0] as! GameCharacter), actionType: Round.ActionType.attack)
 round1.executeAction()
 afficherScore(equipe1: equipe1, equipe2: equipe2)
 
+
 // A FAIRE :
 /*
- * Verrifier que le personage actif appartien bien a l'équipe active et que le personage ciblé appartien bien a l'équipe ciblé.
- * Dans l'ataque faire la verrif attaque sois meme en premier.
- * Dans le heal verrifier "warriorHealError" avant "healEnemyError"
+ * Verrifier que le personage actif appartien bien a l'équipe active et que le personage ciblé appartien bien a l'équipe ciblé.(Classe game)
  */
