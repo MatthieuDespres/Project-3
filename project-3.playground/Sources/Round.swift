@@ -86,7 +86,10 @@ public class Round {
                 return Round.ActionStatus.magusAttackError
             }        } else {
             return Round.ActionStatus.attackHimself
-        } 
+        }
+        /* guard activeCharacter.name != targetCharacter.name else {
+            return Round.ActionStatus.attackHimself
+        }*/
     }
     private func heal()-> Round.ActionStatus {
         if activeCharacter is Magus {
