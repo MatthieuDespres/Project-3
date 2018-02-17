@@ -1,10 +1,6 @@
-//=============================
 // MARK: - Importations
-//=============================
 import PlaygroundSupport
-//=============================
 // MARK: - Function for tests
-//=============================
 func createTeam1()-> Team {
     var mage: Magus
     mage = Magus(name: "Mage")
@@ -51,9 +47,7 @@ func retourLignes (nbLignes: Int) {
         ligne += 1
     }
 }
-//=============================
 // MARK: - Tests
-//=============================
 //Création des deux équipes.
 var equipe1 = createTeam1()
 var equipe2 = createTeam2()
