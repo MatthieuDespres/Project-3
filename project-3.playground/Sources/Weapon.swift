@@ -1,23 +1,17 @@
 import Foundation
 public class Weapon {
-    //===============================
     // MARK: - Stored Properties
-    //===============================
     public let category: Category
     private let material: Material
     private let totem: Totem
-    //===============================
     // MARK: Calculated Properties
-    //===============================
     public var power: Int {
         return getCategoryPower() + getMaterialPower()
     }
     public var name: String {
         return "\(category.rawValue) \(material.rawValue) \(totem.rawValue)"
     }
-    //===============================
     // MARK: - Enumeration
-    //===============================
     public enum Category: String {
         case sword = "Épée"
         case stick = "Bâton"
@@ -51,9 +45,7 @@ public class Weapon {
             return totems[Int(arc4random_uniform(UInt32(totems.count)))]
         }
     }
-    //===============================
     // MARK: - Public Methods
-    //===============================
     public init(category: Category, material: Material) {
         self.category = category
         self.material = material
@@ -62,10 +54,8 @@ public class Weapon {
     public static func createRandom()-> Weapon {
         return Weapon(category: Category.random, material: Material.random)
     }
-    //===============================
     // MARK: Private Methods
-    //===============================
-    private func getCategoryPower()-> Int {
+    private func getCategoryPower() -> Int {
         switch category {
         case .sword:
             return 10
@@ -77,7 +67,7 @@ public class Weapon {
             return 20
         }
     }
-    private func getMaterialPower()-> Int {
+    private func getMaterialPower() -> Int {
         switch material {
         case .wood:
             return 0
