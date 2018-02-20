@@ -1,28 +1,35 @@
+// MARK: - Game
 public class Game {
-    // MARK: - Stored Properties
     private var teams: [Team]
     private var rounds: [Round]
     private static let nbMaxTeam: Int = 2
-    // MARK: Calculated Properties
-    //isOver (nom plus pertinent !!)
-    private var isWinner: Bool {
-        return findWinner()
+    private var isOver: Bool {
+        if findLooser() != nil {
+            return true
+        } else {
+            return false
+        }
     }
-    // MARK: - Public Methods
     public init(teams: [Team]) {
         self.teams = teams
         self.rounds = [Round]()
     }
-    // MARK: Private Methods
-    //renvoi un team optionel
-    private func findWinner() -> Bool {
+    private func findWinner() -> Team? {
         for team in teams {
-            if team.nbCharacterAlive == 0 {
-                return true
-            } else {
-                return false
+            if let loosingTeam = findLooser() {
+                if team.player != loosingTeam.player {
+                    return team
+                }
             }
         }
-        return false
+        return nil
+    }
+    private func findLooser() -> Team? {
+        for team in teams {
+            if team.nbCharacterAlive == 0 {
+                return team
+            }
+        }
+        return nil
     }
 }

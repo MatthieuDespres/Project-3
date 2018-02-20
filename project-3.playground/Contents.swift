@@ -59,8 +59,16 @@ round1 = Round(activeTeam: equipe1, targetTeam: equipe2, activeCharacter: (equip
 round1.executeAction()
 afficherScore(equipe1: equipe1, equipe2: equipe2)
 
+var round2: Round
+round2 = Round(activeTeam: equipe2, targetTeam: equipe2, activeCharacter: (equipe2.characters[0] as! GameCharacter), targetCharacter: (equipe2.characters[0] as! GameCharacter), actionType: Round.ActionType.heal)
+round2.executeAction()
+afficherScore(equipe1: equipe1, equipe2: equipe2)
+
+
+
 
 // A FAIRE :
 /*
  * Verrifier que le personage actif appartien bien a l'équipe active et que le personage ciblé appartien bien a l'équipe ciblé.(Classe game)
  */
+

@@ -1,13 +1,11 @@
 import Foundation
-
-
-// MARK: - Teams creator (Surement dans la classe Game)
+// MARK: - A OPTIMISER
+// TODO: Teams creator (Surement dans la classe Game)
 func createTeams() {
     var numPlayer: Int = 1
     while numPlayer <= 2 {
         var playerName: String
         print("Nom Joueur \(numPlayer) : ")
-        // TODO: A FAIRE : Utilisation de Guard
         playerName = display.readPlayerReply()
         if playerName == "" {
             playerName = "Joueur \(numPlayer)"
@@ -19,7 +17,7 @@ func createTeams() {
         //Retourné un tableau d'équipe
     }
 }
-// MARK: - Characters creator (Surement dans la classe Game)
+// TODO: Characters creator (Surement dans la classe Game)
 func createCharacters(numPlayer: Int, playerName: String) {
     print(playerName + " il est temps de constituer ton équipe.")
     var nbCharacters: Int = 0
@@ -85,23 +83,17 @@ func createCharacters(numPlayer: Int, playerName: String) {
         //Reourner la collection de personnage.
     }
 }
-// Pourquoi pas en méthode static dans GameCharacters? mais c'est de l'affichange dans un class non dédié à ça.
+// TODO: Pourquoi pas en méthode static dans GameCharacters? mais c'est de l'affichange dans un class non dédié à ça.
 func showCharactersTypes() {
     print(" 1 - Combatant : 100 PV : Épée à la main, il incarne la polyvalence au combat.")
     print(" 2 - Mage : 50 PV : Équipé d'un baton il soigne les blessures de son équipe.")
     print(" 3 - Colosse : 200 PV : Protégé derrière son bouclier il est incroyablement résistant.")
     print(" 4 - Nain : 50 PV : Sa hache couplé à sa brutalitée fait du nain un tueur effroyable.")
 }
-
-
-
-
 // MARK: - All Classes
-// MARK: Colossus
+// MARK: - Colossus
 public class Colossus: Warrior {
-    // MARK: - Stored Properties
     private static let colossusHealthMax: Int = 200
-    // MARK: - Public Methods
     public override init(name: String) {
         super.init(name: name)
         health = Colossus.colossusHealthMax
@@ -115,16 +107,13 @@ public class Colossus: Warrior {
             return false
         }
     }
-    // MARK: Private Methods
     private static func createBaseWeapon() -> Weapon {
         return Weapon(category: Weapon.Category.shield, material: Weapon.Material.wood)
     }
 }
-// MARK: Dwarf
+// MARK: - Dwarf
 public class Dwarf: Warrior {
-    // MARK: - Stored Properties
     private static let dwarfHealthMax: Int = 50
-    // MARK: - Public Methods
     public override init(name: String) {
         super.init(name: name)
         health = Dwarf.dwarfHealthMax
@@ -138,16 +127,13 @@ public class Dwarf: Warrior {
             return false
         }
     }
-    // MARK: Private Methods
     private static func createBaseWeapon() -> Weapon {
         return Weapon(category: Weapon.Category.ax, material: Weapon.Material.wood)
     }
 }
-// MARK: Fighter
+// MARK: - Fighter
 public class Fighter: Warrior {
-    // MARK: - Stored Properties
     private static let fighterHealthMax: Int = 100
-    // MARK: - Public Methods
     public override init(name: String) {
         super.init(name: name)
         health = Fighter.fighterHealthMax
@@ -161,16 +147,13 @@ public class Fighter: Warrior {
             return false
         }
     }
-    // MARK: Private Methods
     private static func createBaseWeapon() -> Weapon {
         return Weapon(category: Weapon.Category.sword, material: Weapon.Material.wood)
     }
 }
-// MARK: Magus
+// MARK: - Magus
 public class Magus: GameCharacter {
-    // MARK: - Stored Properties
     private static let magusHealthMax: Int = 50
-    // MARK: - Public Methods
     public override init(name: String) {
         super.init(name: name)
         health = Magus.magusHealthMax
@@ -192,7 +175,6 @@ public class Magus: GameCharacter {
             return false
         }
     }
-    // MARK: Private Methods
     private static func createBaseWeapon() -> Weapon {
         return Weapon(category: Weapon.Category.stick, material: Weapon.Material.wood)
     }
@@ -205,9 +187,8 @@ public class Magus: GameCharacter {
         }
     }
 }
-// MARK: Warrior
+// MARK: - Warrior
 public class Warrior: GameCharacter {
-    // MARK: - Public Methods
     public func attack(target: GameCharacter)-> Round.ActionStatus {
         if target.isAlive {
             target.health -= getDamagePoint(target: target)
@@ -216,7 +197,6 @@ public class Warrior: GameCharacter {
             return Round.ActionStatus.attackDeadError
         }
     }
-    // MARK: Private Methods
     private func getDamagePoint(target: GameCharacter) -> Int{
         if (target.health - weapon.power) >= 0 {
             return weapon.power
@@ -225,9 +205,8 @@ public class Warrior: GameCharacter {
         }
     }
 }
-// MARK: GameCharacter
+// MARK: - GameCharacter
 public class GameCharacter {
-    // MARK: - Stored Properties
     public let name: String
     public var health: Int {
         didSet {
@@ -238,14 +217,12 @@ public class GameCharacter {
     public var healthMax: Int
     public var isAlive: Bool
     private static let characterHealthMax: Int = 0
-    // MARK: - Enumeration
     public enum Job: String {
         case fighter = "combatant"
         case magus = "mage"
         case colossus = "colosse"
         case dwarf = "nain"
     }
-    // MARK: - Public Methods
     public init(name: String) {
         self.name = name
         health = GameCharacter.characterHealthMax
@@ -256,7 +233,6 @@ public class GameCharacter {
     public func equip(weapon: Weapon) {
         self.weapon = weapon
     }
-    // MARK: Private Methods
     private static func createBaseWeapon() -> Weapon {
         return Weapon(category: Weapon.Category.sword, material: Weapon.Material.wood)
     }
@@ -269,21 +245,17 @@ public class GameCharacter {
         }
     }
 }
-// MARK: Team
+// MARK: - Team
 public class Team {
-    // MARK: - Stored Properties
     public let player: String
     public var characters: [AnyObject]
-    // MARK: Calculated Properties
     public var nbCharacterAlive: Int {
         return countCharacterAlive()
     }
-    // MARK: - Public Methods
     public init(player: String, characters: [AnyObject]) {
         self.player = player
         self.characters = characters
     }
-    // MARK: Private Methods
     private func countCharacterAlive() -> Int {
         var nbCharacterAlive: Int = 0
         for character in characters {
@@ -296,18 +268,15 @@ public class Team {
 }
 // MARK: - Weapon
 public class Weapon {
-    // MARK: Stored Properties
     public let category: Category
     private let material: Material
     private let totem: Totem
-    // MARK: Calculated Properties
     public var power: Int {
         return getCategoryPower() + getMaterialPower()
     }
     public var name: String {
         return "\(category.rawValue) \(material.rawValue) \(totem.rawValue)"
     }
-    // MARK: Enumeration
     public enum Category: String {
         case sword = "Épée"
         case stick = "Bâton"
@@ -341,7 +310,6 @@ public class Weapon {
             return totems[Int(arc4random_uniform(UInt32(totems.count)))]
         }
     }
-    // MARK: Public Methods
     public init(category: Category, material: Material) {
         self.category = category
         self.material = material
@@ -350,7 +318,6 @@ public class Weapon {
     public static func createRandom()-> Weapon {
         return Weapon(category: Category.random, material: Material.random)
     }
-    // MARK: Private Methods
     private func getCategoryPower() -> Int {
         switch category {
         case .sword:
@@ -376,18 +343,15 @@ public class Weapon {
 }
 // MARK: - Round
 public class Round {
-    // MARK: Stored Properties
     private let activeTeam: Team
     private let targetTeam: Team
     private var activeCharacter: GameCharacter
     private var targetCharacter: GameCharacter
     private let actionType: ActionType
     private let healthPoint: Int
-    // MARK: Calculated Properties
     private var isTeamMate: Bool {
         return checkPlayersName()
     }
-    // MARK: Enumeration
     public enum ActionType: String {
         case attack = "attaque"
         case heal = "soigne"
@@ -402,7 +366,6 @@ public class Round {
         case healDeadError = "ERREUR : La cible du soins est déja morte."
         case attackHimself = "ERREUR : Le personnage ne peut s'attaquer lui-même."
     }
-    // MARK: Public Methods
     public init(activeTeam: Team, targetTeam: Team, activeCharacter: GameCharacter, targetCharacter: GameCharacter, actionType: ActionType) {
         self.activeTeam = activeTeam
         self.targetTeam = targetTeam
@@ -411,7 +374,7 @@ public class Round {
         self.actionType = actionType
         self.healthPoint =  activeCharacter.weapon.power
     }
-    //Le nomn'est pas cohérent
+    //TODO: Trouver un nom plus cohérent.
     public func executeAction() -> Round.ActionStatus {
         switch actionType {
         case Round.ActionType.attack:
@@ -420,7 +383,6 @@ public class Round {
             return heal()
         }
     }
-    // MARK: Private Methods
     private func checkPlayersName() -> Bool {
         if activeTeam.player == targetTeam.player {
             return true
@@ -428,8 +390,7 @@ public class Round {
             return false
         }
     }
-    //iIsChestAvailable (nom plus pertinent)
-    private func lookForChest() -> Bool {
+    private func isChestAvailable() -> Bool {
         if Int(arc4random_uniform(UInt32(2))) > 0 {
             return true
         } else {
@@ -439,69 +400,65 @@ public class Round {
     private func openChest()-> Weapon {
         return Weapon.createRandom()
     }
-    // TODO: A SIMPLIFIER LES 2 FONCTIONS avec guard
     private func attack() -> Round.ActionStatus {
-        if activeCharacter.name != targetCharacter.name {
-            if activeCharacter is Warrior {
-                if !isTeamMate {
-                    return (activeCharacter as! Warrior).attack(target: targetCharacter)
-                } else {
-                    return Round.ActionStatus.attackTeamMateError
-                }
-            } else {
-                return Round.ActionStatus.magusAttackError
-            }
-        } else {
+        guard activeCharacter.name != targetCharacter.name else {
             return Round.ActionStatus.attackHimself
         }
-        /* guard activeCharacter.name != targetCharacter.name else {
-         return Round.ActionStatus.attackHimself
-         }*/
+        guard activeCharacter is Warrior else {
+            return Round.ActionStatus.magusAttackError
+        }
+        guard !isTeamMate else {
+            return Round.ActionStatus.attackTeamMateError
+        }
+        return (activeCharacter as! Warrior).attack(target: targetCharacter)
     }
     private func heal() -> Round.ActionStatus {
-        if activeCharacter is Magus {
-            if isTeamMate {
-                return (activeCharacter as! Magus).heal(target: targetCharacter)
-            } else {
-                return Round.ActionStatus.healEnemyError
-            }
-        } else {
+        guard activeCharacter is Magus else {
             return Round.ActionStatus.warriorHealError
         }
+        guard isTeamMate else {
+            return Round.ActionStatus.healEnemyError
+        }
+        return (activeCharacter as! Magus).heal(target: targetCharacter)
     }
 }
 // MARK: - Game
 public class Game {
-    // MARK: Stored Properties
     private var teams: [Team]
     private var rounds: [Round]
     private static let nbMaxTeam: Int = 2
-    // MARK: Calculated Properties
-    //isOver (nom plus pertinent !!)
-    private var isWinner: Bool {
-        return findWinner()
+    private var isOver: Bool {
+        if findLooser() != nil {
+            return true
+        } else {
+            return false
+        }
     }
-    // MARK: Public Methods
     public init(teams: [Team]) {
         self.teams = teams
         self.rounds = [Round]()
     }
-    // MARK: Private Methods
-    //renvoi un team optionel serai mieux
-    private func findWinner() -> Bool {
+    private func findWinner() -> Team? {
         for team in teams {
-            if team.nbCharacterAlive == 0 {
-                return true
-            } else {
-                return false
+            if let loosingTeam = findLooser() {
+                if team.player != loosingTeam.player {
+                    return team
+                }
             }
         }
-        return false
+        return nil
+    }
+    private func findLooser() -> Team? {
+        for team in teams {
+            if team.nbCharacterAlive == 0 {
+                return team
+            }
+        }
+        return nil
     }
 }
 // MARK: - Display
 public class Display {
-    // MARK: Stored Properties
     private let interfaceLineLength: Int = 60
     // MARK: Draw Methods
     public init(welcomeWord: String) {
@@ -571,14 +528,7 @@ public class Display {
         }
     }
 }
-
-
-
-
-
-
-
-// MARK: - The Game
+// MARK: - Main
 var display: Display
 display = Display(welcomeWord: "Le choc des brutes")
 createTeams()
