@@ -17,7 +17,7 @@ func createTeams() {
         //Retourné un tableau d'équipe
     }
 }
-// TODO: Characters creator (Surement dans la classe Game)
+// TODO: Characters creator (Surement dans la classe team)
 func createCharacters(numPlayer: Int, playerName: String) {
     print(playerName + " il est temps de constituer ton équipe.")
     var nbCharacters: Int = 0
@@ -246,6 +246,7 @@ public class GameCharacter {
     }
 }
 // MARK: - Team
+// TODO: Idée, initialiser characters comme vide et faire des méthodes "createCharacter", "addCharacter".
 public class Team {
     public let player: String
     public var characters: [AnyObject]
@@ -423,6 +424,7 @@ public class Round {
     }
 }
 // MARK: - Game
+// TODO: Idée, à l'initialisation, initialisé teams comme vide et faire les méthodes "createTeams", "addTeam".
 public class Game {
     private var teams: [Team]
     private var rounds: [Round]
