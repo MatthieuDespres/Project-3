@@ -1,102 +1,7 @@
 import Foundation
-// MARK: - A OPTIMISER
-// TODO: A metre dans le controleur de la création de partie
-func createTeams() {
-    for numPlayer in 1...2 {
-        var playerName: String
-        var team: Team
-        display.gmSpeak(text: "Nom Joueur \(numPlayer) : ", mood: Display.gmMood.normal)
-        playerName = display.readString()
-        team = Team(player: playerName, characters: createCharacters(numPlayer: numPlayer, playerName: playerName))
-        //Ajouter l'équipe à la proprieté de l'objet Game du controleur.
-    }
-}
-// TODO: Characters creator (Surement dans la classe team).
-// TODO: Découper en plusieurs sous fonctions.
-func createCharacters(numPlayer: Int, playerName: String) -> [AnyObject] {
-    display.gmSpeak(text:"\(playerName) il est temps de constituer ton équipe.", mood: Display.gmMood.normal)
-    var nbCharacters: Int = 0
-    var characterNumber: Int
-    var characters = [AnyObject]()
-    // Faire un for
-    while nbCharacters < 3 {
-        var characterName: String
-        switch nbCharacters {
-        case 0:
-            display.gmSpeak(text: "Choisis le nom de ton premier personnage :", mood: Display.gmMood.normal)
-        case 1:
-            display.gmSpeak(text: "Choisis le nom de ton second personnage :", mood: Display.gmMood.normal)
-        case 2:
-            display.gmSpeak(text: "Choisis le nom de ton dernier personnage :", mood: Display.gmMood.normal)
-        default:
-            break
-        }
-        characterName = display.readString()
-        showCharactersTypes()
-        switch nbCharacters {
-        case 0:
-            display.gmSpeak(text: "Choisis la classe de \(characterName), ton premier personnage :", mood: Display.gmMood.normal)
-        case 1:
-            display.gmSpeak(text: "Choisis la classe de \(characterName), ton second personnage :", mood: Display.gmMood.normal)
-        case 2:
-            display.gmSpeak(text: "Choisis la classe de \(characterName), ton dernier personnage :", mood: Display.gmMood.normal)
-        default:
-            break
-        }
-        characterNumber = display.readIntBetween(min: 1, max: 4)
-        // Refactoriser
-        switch characterNumber {
-        case 1:
-            if characterName == "" {
-                characterName = "Combatant sans nom"
-            }
-            display.gmSpeak(text: "\(characterName) est un combatant.", mood: Display.gmMood.normal)
-            var fighter: Fighter
-            fighter = Fighter(name: characterName)
-            characters.append(fighter)
-        case 2:
-            if characterName == "" {
-                characterName = "Mage sans nom"
-            }
-            display.gmSpeak(text: "\(characterName) est un mage.", mood: Display.gmMood.normal)
-            var magus: Magus
-            magus = Magus(name: characterName)
-            characters.append(magus)
-        case 3:
-            if characterName == "" {
-                characterName = "Colosse sans nom"
-            }
-            display.gmSpeak(text: "\(characterName) est un colosse.", mood: Display.gmMood.normal)
-            var colossus: Colossus
-            colossus = Colossus(name: characterName)
-            characters.append(colossus)
-        case 4:
-            if characterName == "" {
-                characterName = "Nain sans nom"
-            }
-            display.gmSpeak(text: "\(characterName) est un nain.", mood: Display.gmMood.normal)
-            var dwarf: Dwarf
-            dwarf = Dwarf(name: characterName)
-            characters.append(dwarf)
-        default:
-            if characterName == "" {
-                characterName = "Combatant sans nom"
-            }
-            display.gmSpeak(text: "\(characterName) est un combatant.", mood: Display.gmMood.normal)
-            var fighter: Fighter
-            fighter = Fighter(name: characterName)
-            characters.append(fighter)
-        }
-        nbCharacters += 1
-    }
-    return characters
-}
-// TODO: Pourquoi pas en méthode static dans GameCharacters? mais c'est de l'affichange dans un class non dédié à ça.
-// TODO: Amélioré la lisibilitée
-func showCharactersTypes() {
-    print(" 1 - 🤺 Combatant: Épée à la main, il incarne la polyvalence au combat.\n 2 - 🧙🏻‍♂️ Mage: Avec son baton il soigne les blessures de son équipe.\n 3 - 👨🏻‍🚀 Colosse: Protégé derrière son bouclier il est très résistant.\n 4 - 💂🏻‍♂️ Nain: Une hache à la main il est un tueur né.")
-}
-// MARK: - All Classes
+//==================================================
+// MARK: - Model
+//==================================================
 // MARK: - Colossus
 public class Colossus: Warrior {
     private static let colossusHealthMax: Int = 200
@@ -252,7 +157,6 @@ public class GameCharacter {
     }
 }
 // MARK: - Team
-// TODO: Idée, initialiser characters comme vide et faire des méthodes "createCharacter", "addCharacter".
 public class Team {
     public let player: String
     public var characters: [AnyObject]
@@ -442,9 +346,12 @@ public class Game {
             return false
         }
     }
-    public init(teams: [Team]) {
-        self.teams = teams
+    public init() {
+        self.teams = [Team]()
         self.rounds = [Round]()
+    }
+    public func addTeam(team: Team) {
+        teams.append(team)
     }
     private func findWinner() -> Team? {
         for team in teams {
@@ -465,15 +372,19 @@ public class Game {
         return nil
     }
 }
+//==================================================
+// MARK: - View
+//==================================================
 // MARK: - Display
 public class Display {
-    private let interfaceLineLength: Int = 60
+    private let interfaceLineLength: Int = 70
+    private let gameTitle: String = "Le choc des brutes"
     // MARK: Draw and Speak Methods
-    public init(welcomeWord: String) {
-        sayWelcome(welcomeWord: welcomeWord)
+    public init() {
+        sayWelcome(welcomeWord: gameTitle)
     }
     private func sayWelcome(welcomeWord: String) {
-        drawFrameOneText(text: welcomeWord)
+        drawFrameOneLine(text: welcomeWord)
     }
     // TODO: question pour Ambroise Faire un méthode privé pour juste un if?
     public func drawLine(motif: String) {
@@ -504,10 +415,18 @@ public class Display {
         }
         return lineText
     }
-    public func drawFrameOneText(text: String) {
+    public func drawFrameOneLine(text: String) {
         drawLine(motif: "-")
         drawLine(motif: " ")
         center(text: text)
+        drawLine(motif: " ")
+        drawLine(motif: "-")
+    }
+    public func drawFrameMultiLine(lines: [String]) {
+        drawLine(motif: "-")
+        drawLine(motif: " ")
+        //Méthode qui déroule chaque ligne.
+            //Sous méthode qui aligne le texte sur la gauche
         drawLine(motif: " ")
         drawLine(motif: "-")
     }
@@ -517,6 +436,10 @@ public class Display {
     }
     public func gmSpeak(text: String, mood: gmMood) {
         print("\(mood.rawValue) \(text)")
+    }
+    // TODO: Amélioré la lisibilitée Un tableau par exemple.
+    func showCharactersTypes() {
+        print(" 1-🤺 Combatant: Épée à la main, il incarne la polyvalence au combat.\n 2-🧙🏻‍♂️ Mage: Avec son baton il soigne les blessures de son équipe.\n 3-👨🏻‍🚀 Colosse: Protégé derrière son bouclier il est très résistant.\n 4-💂🏻‍♂️ Nain: Une hache à la main il est un tueur né.")
     }
     // MARK: Read Methods
     // TODO: Ici clairement le else du if ne sert à rien mais j'arrive pas à l'enlever.
@@ -562,33 +485,74 @@ public class Display {
         }
     }
 }
+//==================================================
+// MARK: - Controller
+//==================================================
+public class StartGameController {
+    private var display: Display
+    private var game: Game
+    public init() {
+        self.display = Display()
+        self.game = Game()
+        createTeams()
+    }
+    private func createTeams() {
+        for numPlayer in 1...2 {
+            var playerName: String
+            var team: Team
+            display.gmSpeak(text: "Nom Joueur \(numPlayer) : ", mood: Display.gmMood.normal)
+            playerName = display.readString()
+            team = Team(player: playerName, characters: createCharacters(numPlayer: numPlayer, playerName: playerName))
+            game.addTeam(team: team)
+        }
+    }
+    // TODO: Découper en plusieurs sous fonctions.
+    //LE GM Parle
+    //Créer le nom d'un personnage
+    //Créer un personnage.
+    //Crée la collection de personnage
+    private func createCharacters(numPlayer: Int, playerName: String) -> [AnyObject] {
+        var characterNumber: Int
+        var characters = [AnyObject]()
+        var word: [Int: String] = [1: "premier", 2: "second", 3: "dernier"]
+        display.gmSpeak(text:"\(playerName) il est temps de constituer ton équipe.", mood: Display.gmMood.normal)
+        for nbCharacters in 1...3 {
+            var characterName: String
+            display.gmSpeak(text: "Choisis le nom de ton \(word[nbCharacters]!) personnage :", mood: Display.gmMood.normal)
+            characterName = display.readString()
+            display.showCharactersTypes()
+            display.gmSpeak(text: "Choisis la classe de \(characterName), ton \(word[nbCharacters]!) personnage :", mood: Display.gmMood.normal)
+            characterNumber = display.readIntBetween(min: 1, max: 4)
+            // Refactoriser dans une méthode avec le nom et le type en parametre.
+            switch characterNumber {
+            case 1:
+                display.gmSpeak(text: "\(characterName) est un combatant.", mood: Display.gmMood.normal)
+                var fighter: Fighter
+                fighter = Fighter(name: characterName)
+                characters.append(fighter)
+            case 2:
+                display.gmSpeak(text: "\(characterName) est un mage.", mood: Display.gmMood.normal)
+                var magus: Magus
+                magus = Magus(name: characterName)
+                characters.append(magus)
+            case 3:
+                display.gmSpeak(text: "\(characterName) est un colosse.", mood: Display.gmMood.normal)
+                var colossus: Colossus
+                colossus = Colossus(name: characterName)
+                characters.append(colossus)
+            case 4:
+                display.gmSpeak(text: "\(characterName) est un nain.", mood: Display.gmMood.normal)
+                var dwarf: Dwarf
+                dwarf = Dwarf(name: characterName)
+                characters.append(dwarf)
+            default:
+                break
+            }
+        }
+        return characters
+    }
+}
+//==================================================
 // MARK: - Main
-//Le controleur doit gerer le display
-// Le main initie un controleur c tout
-var display: Display
-display = Display(welcomeWord: "Le choc des brutes.")
-createTeams()
-
-
-/*
- - Combatant : 🤺
- - Mage :🧙🏻‍♂️
- - Colosse :👨🏻‍🚀
- - Nain :💂🏻‍♂️
- - Épée :🗡
- - Bâton :🥖
- - Bouclier :🛡
- - Hache :⛏
- - Bois :🌲
- - Fer :🔩
- - Diamant :💎
- - Points de vie :❤️
- - Mort :☠️
- - Gagnant :🏆
- - Perdant :😭
- - Coffre :📦
- - Note MJ :📜
- - Note MJ erreur : 😡
- - Attaquer :⚔️
- - Soigner :💉
- */
+//==================================================
+var startGameController: StartGameController = StartGameController()
