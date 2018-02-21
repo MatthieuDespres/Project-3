@@ -5,46 +5,44 @@ func createTeams() {
     var numPlayer: Int = 1
     while numPlayer <= 2 {
         var playerName: String
-        print("Nom Joueur \(numPlayer) : ")
+        display.gmSpeak(text: "Nom Joueur \(numPlayer) : ")
         playerName = display.readPlayerReply()
         if playerName == "" {
             playerName = "Joueur \(numPlayer)"
         }
         createCharacters(numPlayer: numPlayer, playerName: playerName)
         numPlayer += 1
-        display.drawSimpleLine()
-        display.clearScreen()
         //Retourné un tableau d'équipe
     }
 }
 // TODO: Characters creator (Surement dans la classe team)
 func createCharacters(numPlayer: Int, playerName: String) {
-    print(playerName + " il est temps de constituer ton équipe.")
+    display.gmSpeak(text:"\(playerName) il est temps de constituer ton équipe.")
     var nbCharacters: Int = 0
     var characterNumber: String
     while nbCharacters < 3 {
         var characterName: String
         switch nbCharacters {
         case 0:
-            print("Choisis le nom de ton premier personnage :")
+            display.gmSpeak(text: "Choisis le nom de ton premier personnage :")
         case 1:
-            print("Choisis le nom de ton second personnage :")
+            display.gmSpeak(text: "Choisis le nom de ton second personnage :")
         case 2:
-            print("Choisis le nom de ton dernier personnage :")
+            display.gmSpeak(text: "Choisis le nom de ton dernier personnage :")
         default:
-            print("Ce cas n'arrive jamais. Ou alors j'ai merder quelque part.")
+            display.gmSpeak(text: "Ce cas n'arrive jamais. Ou alors j'ai merder quelque part.")
         }
         characterName = display.readPlayerReply()
         showCharactersTypes()
         switch nbCharacters {
         case 0:
-            print("Choisis la classe de \(characterName), ton premier personnage :")
+            display.gmSpeak(text: "Choisis la classe de \(characterName), ton premier personnage :")
         case 1:
-            print("Choisis la classe de \(characterName), ton second personnage :")
+            display.gmSpeak(text: "Choisis la classe de \(characterName), ton second personnage :")
         case 2:
-            print("Choisis la classe de \(characterName), ton dernier personnage :")
+            display.gmSpeak(text: "Choisis la classe de \(characterName), ton dernier personnage :")
         default:
-            print("Ce cas n'arrive jamais. Ou alors j'ai merder quelque part.")
+            display.gmSpeak(text: "Ce cas n'arrive jamais. Ou alors j'ai merder quelque part.")
         }
         characterNumber = display.readPlayerReply()
         switch characterNumber {
@@ -52,31 +50,31 @@ func createCharacters(numPlayer: Int, playerName: String) {
             if characterName == "" {
                 characterName = "Combatant sans nom"
             }
-            print(characterName + " est un combatant.")
+            display.gmSpeak(text: "\(characterName) est un combatant.")
             //Crée obj et ajouter a une collec
         case "2":
             if characterName == "" {
                 characterName = "Mage sans nom"
             }
-            print(characterName + " est un mage.")
+            display.gmSpeak(text: "\(characterName) est un mage.")
             //Crée obj et ajouter a une collec
         case "3":
             if characterName == "" {
                 characterName = "Colosse sans nom"
             }
-            print(characterName + " est un colosse.")
+            display.gmSpeak(text: "\(characterName) est un colosse.")
             //Crée obj et ajouter a une collec
         case "4":
             if characterName == "" {
                 characterName = "Nain sans nom"
             }
-            print(characterName + " est un nain.")
+            display.gmSpeak(text: "\(characterName) est un nain.")
             //Crée obj et ajouter a une collec
         default:
             if characterName == "" {
                 characterName = "Combatant sans nom"
             }
-            print(characterName + " est un combatant.")
+            display.gmSpeak(text: "\(characterName) est un combatant.")
             //Crée obj et ajouter a une collec
         }
         nbCharacters += 1
@@ -85,10 +83,10 @@ func createCharacters(numPlayer: Int, playerName: String) {
 }
 // TODO: Pourquoi pas en méthode static dans GameCharacters? mais c'est de l'affichange dans un class non dédié à ça.
 func showCharactersTypes() {
-    print(" 1 - Combatant : 100 PV : Épée à la main, il incarne la polyvalence au combat.")
-    print(" 2 - Mage : 50 PV : Équipé d'un baton il soigne les blessures de son équipe.")
-    print(" 3 - Colosse : 200 PV : Protégé derrière son bouclier il est incroyablement résistant.")
-    print(" 4 - Nain : 50 PV : Sa hache couplé à sa brutalitée fait du nain un tueur effroyable.")
+    print(" 1 - 🤺 Combatant: Épée à la main, il incarne la polyvalence au combat.")
+    print(" 2 - 🧙🏻‍♂️ Mage: Avec son baton il soigne les blessures de son équipe.")
+    print(" 3 - 👨🏻‍🚀 Colosse: Protégé derrière son bouclier il est très résistant.")
+    print(" 4 - 💂🏻‍♂️ Nain: Une hache à la main il est un tueur né.")
 }
 // MARK: - All Classes
 // MARK: - Colossus
@@ -515,6 +513,10 @@ public class Display {
         drawEmptyLine()
         drawSimpleLine()
     }
+    // MARK: MJ
+    public func gmSpeak(text: String) {
+        print("📜 \(text)")
+    }
     // MARK: Read Methods
     public func readPlayerReply() -> String{
         if let playerResponse = readLine() {
@@ -534,3 +536,26 @@ public class Display {
 var display: Display
 display = Display(welcomeWord: "Le choc des brutes")
 createTeams()
+
+
+
+
+/*
+ - Combatant : 🤺
+ - Mage :🧙🏻‍♂️
+ - Colosse :👨🏻‍🚀
+ - Nain :💂🏻‍♂️
+ - Épée :🗡
+ - Bâton :🥖
+ - Bouclier :🛡
+ - Hache :⛏
+ - Bois :🌲
+ - Fer :🔩
+ - Diamant :💎
+ - Points de vie :❤️
+ - Mort :☠️
+ - Gagnant :🏆
+ - Perdant :😭
+ - Coffre :📦
+ - Note MJ :📜
+ */
