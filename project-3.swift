@@ -4,6 +4,7 @@ import Foundation
 func createTeams() {
     var numPlayer: Int = 1
     var teams = [Team]()
+    // Boucle for
     while numPlayer <= 2 {
         var playerName: String
         var team: Team
@@ -26,6 +27,7 @@ func createCharacters(numPlayer: Int, playerName: String) -> [AnyObject] {
     var nbCharacters: Int = 0
     var characterNumber: String
     var characters = [AnyObject]()
+    // Faire un for
     while nbCharacters < 3 {
         var characterName: String
         switch nbCharacters {
@@ -36,7 +38,7 @@ func createCharacters(numPlayer: Int, playerName: String) -> [AnyObject] {
         case 2:
             display.gmSpeak(text: "Choisis le nom de ton dernier personnage :")
         default:
-            display.gmSpeak(text: "Ce cas n'arrive jamais. Ou alors j'ai merder quelque part.")
+            break
         }
         characterName = display.readPlayerReply()
         showCharactersTypes()
@@ -48,9 +50,10 @@ func createCharacters(numPlayer: Int, playerName: String) -> [AnyObject] {
         case 2:
             display.gmSpeak(text: "Choisis la classe de \(characterName), ton dernier personnage :")
         default:
-            display.gmSpeak(text: "Ce cas n'arrive jamais. Ou alors j'ai merder quelque part.")
+            break
         }
         characterNumber = display.readPlayerReply()
+        // Refactoriser
         switch characterNumber {
         case "1":
             if characterName == "" {
@@ -475,6 +478,8 @@ public class Game {
 public class Display {
     private let interfaceLineLength: Int = 60
     // MARK: Draw and Speak Methods
+    //Factirisé les lignes en un seule fontion.
+    //cnterText au lieu du no a la con
     public init(welcomeWord: String) {
         sayWelcome(welcomeWord: welcomeWord)
     }
@@ -483,7 +488,7 @@ public class Display {
     }
     public func drawSimpleLine() {
         var line: String = "+"
-        for _ in 1...self.interfaceLineLength {
+        for _ in 1...interfaceLineLength {
             line += "-"
         }
         line += "+"
@@ -491,7 +496,7 @@ public class Display {
     }
     public func drawDoubleLine() {
         var line: String = "+"
-        for _ in 1...self.interfaceLineLength {
+        for _ in 1...interfaceLineLength {
             line += "="
         }
         line += "+"
@@ -499,7 +504,7 @@ public class Display {
     }
     public func drawEmptyLine() {
         var line: String = "|"
-        for _ in 1...self.interfaceLineLength {
+        for _ in 1...interfaceLineLength {
             line += " "
         }
         line += "|"
@@ -508,8 +513,8 @@ public class Display {
     // TODO: Découper en plusieurs sous fonctions.
     private func drawTextLine(text: String) {
         let nbChar: Int = text.count
-        let prefix: Int = (self.interfaceLineLength - nbChar) / 2
-        let suffix: Int = (self.interfaceLineLength - nbChar - prefix)
+        let prefix: Int = (interfaceLineLength - nbChar) / 2
+        let suffix: Int = (interfaceLineLength - nbChar - prefix)
         var lineText: String = "|"
         for _ in 1...prefix {
             lineText += " "
@@ -547,11 +552,11 @@ public class Display {
     }
 }
 // MARK: - Main
+//Le controleur doit gerer le display
+// Le main initie un controleur c tout
 var display: Display
 display = Display(welcomeWord: "Le choc des brutes")
 createTeams()
-
-
 
 
 /*
@@ -572,4 +577,5 @@ createTeams()
  - Perdant :😭
  - Coffre :📦
  - Note MJ :📜
+ - Note MJ erreur : 😡
  */
