@@ -1,89 +1,80 @@
 import Foundation
 // MARK: - A OPTIMISER
-// TODO: Teams creator (Surement dans la classe Game)
+// TODO: A metre dans le controleur de la création de partie
 func createTeams() {
-    var numPlayer: Int = 1
-    var teams = [Team]()
-    // Boucle for
-    while numPlayer <= 2 {
+    for numPlayer in 1...2 {
         var playerName: String
         var team: Team
-        display.gmSpeak(text: "Nom Joueur \(numPlayer) : ")
-        playerName = display.readPlayerReply()
-        if playerName == "" {
-            playerName = "Joueur \(numPlayer)"
-        }
-        let characters = createCharacters(numPlayer: numPlayer, playerName: playerName)
-        numPlayer += 1
-        team = Team(player: playerName, characters: characters)
-        teams.append(team)
+        display.gmSpeak(text: "Nom Joueur \(numPlayer) : ", mood: Display.gmMood.normal)
+        playerName = display.readString()
+        team = Team(player: playerName, characters: createCharacters(numPlayer: numPlayer, playerName: playerName))
+        //Ajouter l'équipe à la proprieté de l'objet Game du controleur.
     }
-    //Retourné un tableau d'équipe
 }
 // TODO: Characters creator (Surement dans la classe team).
 // TODO: Découper en plusieurs sous fonctions.
 func createCharacters(numPlayer: Int, playerName: String) -> [AnyObject] {
-    display.gmSpeak(text:"\(playerName) il est temps de constituer ton équipe.")
+    display.gmSpeak(text:"\(playerName) il est temps de constituer ton équipe.", mood: Display.gmMood.normal)
     var nbCharacters: Int = 0
-    var characterNumber: String
+    var characterNumber: Int
     var characters = [AnyObject]()
     // Faire un for
     while nbCharacters < 3 {
         var characterName: String
         switch nbCharacters {
         case 0:
-            display.gmSpeak(text: "Choisis le nom de ton premier personnage :")
+            display.gmSpeak(text: "Choisis le nom de ton premier personnage :", mood: Display.gmMood.normal)
         case 1:
-            display.gmSpeak(text: "Choisis le nom de ton second personnage :")
+            display.gmSpeak(text: "Choisis le nom de ton second personnage :", mood: Display.gmMood.normal)
         case 2:
-            display.gmSpeak(text: "Choisis le nom de ton dernier personnage :")
+            display.gmSpeak(text: "Choisis le nom de ton dernier personnage :", mood: Display.gmMood.normal)
         default:
             break
         }
-        characterName = display.readPlayerReply()
+        characterName = display.readString()
         showCharactersTypes()
         switch nbCharacters {
         case 0:
-            display.gmSpeak(text: "Choisis la classe de \(characterName), ton premier personnage :")
+            display.gmSpeak(text: "Choisis la classe de \(characterName), ton premier personnage :", mood: Display.gmMood.normal)
         case 1:
-            display.gmSpeak(text: "Choisis la classe de \(characterName), ton second personnage :")
+            display.gmSpeak(text: "Choisis la classe de \(characterName), ton second personnage :", mood: Display.gmMood.normal)
         case 2:
-            display.gmSpeak(text: "Choisis la classe de \(characterName), ton dernier personnage :")
+            display.gmSpeak(text: "Choisis la classe de \(characterName), ton dernier personnage :", mood: Display.gmMood.normal)
         default:
             break
         }
-        characterNumber = display.readPlayerReply()
+        characterNumber = display.readIntBetween(min: 1, max: 4)
         // Refactoriser
         switch characterNumber {
-        case "1":
+        case 1:
             if characterName == "" {
                 characterName = "Combatant sans nom"
             }
-            display.gmSpeak(text: "\(characterName) est un combatant.")
+            display.gmSpeak(text: "\(characterName) est un combatant.", mood: Display.gmMood.normal)
             var fighter: Fighter
             fighter = Fighter(name: characterName)
             characters.append(fighter)
-        case "2":
+        case 2:
             if characterName == "" {
                 characterName = "Mage sans nom"
             }
-            display.gmSpeak(text: "\(characterName) est un mage.")
+            display.gmSpeak(text: "\(characterName) est un mage.", mood: Display.gmMood.normal)
             var magus: Magus
             magus = Magus(name: characterName)
             characters.append(magus)
-        case "3":
+        case 3:
             if characterName == "" {
                 characterName = "Colosse sans nom"
             }
-            display.gmSpeak(text: "\(characterName) est un colosse.")
+            display.gmSpeak(text: "\(characterName) est un colosse.", mood: Display.gmMood.normal)
             var colossus: Colossus
             colossus = Colossus(name: characterName)
             characters.append(colossus)
-        case "4":
+        case 4:
             if characterName == "" {
                 characterName = "Nain sans nom"
             }
-            display.gmSpeak(text: "\(characterName) est un nain.")
+            display.gmSpeak(text: "\(characterName) est un nain.", mood: Display.gmMood.normal)
             var dwarf: Dwarf
             dwarf = Dwarf(name: characterName)
             characters.append(dwarf)
@@ -91,7 +82,7 @@ func createCharacters(numPlayer: Int, playerName: String) -> [AnyObject] {
             if characterName == "" {
                 characterName = "Combatant sans nom"
             }
-            display.gmSpeak(text: "\(characterName) est un combatant.")
+            display.gmSpeak(text: "\(characterName) est un combatant.", mood: Display.gmMood.normal)
             var fighter: Fighter
             fighter = Fighter(name: characterName)
             characters.append(fighter)
@@ -478,44 +469,32 @@ public class Game {
 public class Display {
     private let interfaceLineLength: Int = 60
     // MARK: Draw and Speak Methods
-    //Factirisé les lignes en un seule fontion.
-    //cnterText au lieu du no a la con
     public init(welcomeWord: String) {
         sayWelcome(welcomeWord: welcomeWord)
     }
     private func sayWelcome(welcomeWord: String) {
         drawFrameOneText(text: welcomeWord)
     }
-    public func drawSimpleLine() {
-        var line: String = "+"
+    // TODO: question pour Ambroise Faire un méthode privé pour juste un if?
+    public func drawLine(motif: String) {
+        var line: String = ""
+        var startAndStopMotif: String = "+"
         for _ in 1...interfaceLineLength {
-            line += "-"
+            line += motif
         }
-        line += "+"
+        if motif == " " {
+            startAndStopMotif = "|"
+        }
+        line = startAndStopMotif + line + startAndStopMotif
         print(line)
     }
-    public func drawDoubleLine() {
-        var line: String = "+"
-        for _ in 1...interfaceLineLength {
-            line += "="
-        }
-        line += "+"
-        print(line)
+    private func center(text: String) {
+        print("|\(centerTextInString(text: text))|")
     }
-    public func drawEmptyLine() {
-        var line: String = "|"
-        for _ in 1...interfaceLineLength {
-            line += " "
-        }
-        line += "|"
-        print(line)
-    }
-    // TODO: Découper en plusieurs sous fonctions.
-    private func drawTextLine(text: String) {
-        let nbChar: Int = text.count
-        let prefix: Int = (interfaceLineLength - nbChar) / 2
-        let suffix: Int = (interfaceLineLength - nbChar - prefix)
-        var lineText: String = "|"
+    private func centerTextInString(text: String) -> String {
+        let prefix: Int = (interfaceLineLength - text.count) / 2
+        let suffix: Int = (interfaceLineLength - text.count - prefix)
+        var lineText: String = ""
         for _ in 1...prefix {
             lineText += " "
         }
@@ -523,26 +502,58 @@ public class Display {
         for _ in 1...suffix {
             lineText += " "
         }
-        lineText += "|"
-        print(lineText)
+        return lineText
     }
     public func drawFrameOneText(text: String) {
-        drawSimpleLine()
-        drawEmptyLine()
-        drawTextLine(text: text)
-        drawEmptyLine()
-        drawSimpleLine()
+        drawLine(motif: "-")
+        drawLine(motif: " ")
+        center(text: text)
+        drawLine(motif: " ")
+        drawLine(motif: "-")
     }
-    public func gmSpeak(text: String) {
-        print("📜 \(text)")
+    public enum gmMood: String {
+        case normal = "📜"
+        case error = "😡"
+    }
+    public func gmSpeak(text: String, mood: gmMood) {
+        print("\(mood.rawValue) \(text)")
     }
     // MARK: Read Methods
-    public func readPlayerReply() -> String{
+    // TODO: Ici clairement le else du if ne sert à rien mais j'arrive pas à l'enlever.
+    public func readString() -> String{
         if let playerResponse = readLine() {
+            guard isUsableString(text: playerResponse) else {
+                gmSpeak(text: "ERREUR: Le maitre du jeu apprécierait une réponse.", mood: Display.gmMood.error)
+                return readString()
+            }
             return playerResponse
         } else {
-            return ""
+            gmSpeak(text: "ERREUR: Le maitre du jeu apprécierait une réponse.", mood: Display.gmMood.error)
+            return readString()
         }
+    }
+    // TODO: Utilisation d'expression régulière pour éviter les saisie de "" ou " " ou "     "...
+    private func isUsableString(text: String) -> Bool {
+        guard text != "" && text != " " else {
+            return false
+        }
+        return true
+    }
+    public func readInt() -> Int {
+        if let playerInt = Int(readString()) {
+            return playerInt
+        } else {
+            gmSpeak(text: "ERREUR: Ici la réponse appropriée est un nombre.", mood: Display.gmMood.error)
+            return readInt()
+        }
+    }
+    public func readIntBetween(min: Int, max: Int) -> Int {
+        let controlInt: Int = readInt()
+        guard controlInt >= min && controlInt <= max else {
+            gmSpeak(text: "ERREUR: La valeur attendue doit être comprise entre \(min) et \(max).", mood: Display.gmMood.error)
+            return readIntBetween(min: min, max: max)
+        }
+        return controlInt
     }
     // MARK: Clear Methods
     public func clearScreen() {
@@ -555,7 +566,7 @@ public class Display {
 //Le controleur doit gerer le display
 // Le main initie un controleur c tout
 var display: Display
-display = Display(welcomeWord: "Le choc des brutes")
+display = Display(welcomeWord: "Le choc des brutes.")
 createTeams()
 
 
@@ -578,4 +589,6 @@ createTeams()
  - Coffre :📦
  - Note MJ :📜
  - Note MJ erreur : 😡
+ - Attaquer :⚔️
+ - Soigner :💉
  */
