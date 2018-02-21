@@ -15,7 +15,8 @@ func createTeams() {
         //Retourné un tableau d'équipe
     }
 }
-// TODO: Characters creator (Surement dans la classe team)
+// TODO: Characters creator (Surement dans la classe team).
+// TODO: Découper en plusieurs sous fonctions.
 func createCharacters(numPlayer: Int, playerName: String) {
     display.gmSpeak(text:"\(playerName) il est temps de constituer ton équipe.")
     var nbCharacters: Int = 0
@@ -82,11 +83,9 @@ func createCharacters(numPlayer: Int, playerName: String) {
     }
 }
 // TODO: Pourquoi pas en méthode static dans GameCharacters? mais c'est de l'affichange dans un class non dédié à ça.
+// TODO: Amélioré la lisibilitée
 func showCharactersTypes() {
-    print(" 1 - 🤺 Combatant: Épée à la main, il incarne la polyvalence au combat.")
-    print(" 2 - 🧙🏻‍♂️ Mage: Avec son baton il soigne les blessures de son équipe.")
-    print(" 3 - 👨🏻‍🚀 Colosse: Protégé derrière son bouclier il est très résistant.")
-    print(" 4 - 💂🏻‍♂️ Nain: Une hache à la main il est un tueur né.")
+    print(" 1 - 🤺 Combatant: Épée à la main, il incarne la polyvalence au combat.\n 2 - 🧙🏻‍♂️ Mage: Avec son baton il soigne les blessures de son équipe.\n 3 - 👨🏻‍🚀 Colosse: Protégé derrière son bouclier il est très résistant.\n 4 - 💂🏻‍♂️ Nain: Une hache à la main il est un tueur né.")
 }
 // MARK: - All Classes
 // MARK: - Colossus
@@ -460,7 +459,7 @@ public class Game {
 // MARK: - Display
 public class Display {
     private let interfaceLineLength: Int = 60
-    // MARK: Draw Methods
+    // MARK: Draw and Speak Methods
     public init(welcomeWord: String) {
         sayWelcome(welcomeWord: welcomeWord)
     }
@@ -491,6 +490,7 @@ public class Display {
         line += "|"
         print(line)
     }
+    // TODO: Découper en plusieurs sous fonctions.
     private func drawTextLine(text: String) {
         let nbChar: Int = text.count
         let prefix: Int = (self.interfaceLineLength - nbChar) / 2
@@ -513,7 +513,6 @@ public class Display {
         drawEmptyLine()
         drawSimpleLine()
     }
-    // MARK: MJ
     public func gmSpeak(text: String) {
         print("📜 \(text)")
     }
