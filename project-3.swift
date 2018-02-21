@@ -3,24 +3,29 @@ import Foundation
 // TODO: Teams creator (Surement dans la classe Game)
 func createTeams() {
     var numPlayer: Int = 1
+    var teams = [Team]()
     while numPlayer <= 2 {
         var playerName: String
+        var team: Team
         display.gmSpeak(text: "Nom Joueur \(numPlayer) : ")
         playerName = display.readPlayerReply()
         if playerName == "" {
             playerName = "Joueur \(numPlayer)"
         }
-        createCharacters(numPlayer: numPlayer, playerName: playerName)
+        let characters = createCharacters(numPlayer: numPlayer, playerName: playerName)
         numPlayer += 1
-        //Retourné un tableau d'équipe
+        team = Team(player: playerName, characters: characters)
+        teams.append(team)
     }
+    //Retourné un tableau d'équipe
 }
 // TODO: Characters creator (Surement dans la classe team).
 // TODO: Découper en plusieurs sous fonctions.
-func createCharacters(numPlayer: Int, playerName: String) {
+func createCharacters(numPlayer: Int, playerName: String) -> [AnyObject] {
     display.gmSpeak(text:"\(playerName) il est temps de constituer ton équipe.")
     var nbCharacters: Int = 0
     var characterNumber: String
+    var characters = [AnyObject]()
     while nbCharacters < 3 {
         var characterName: String
         switch nbCharacters {
@@ -52,35 +57,45 @@ func createCharacters(numPlayer: Int, playerName: String) {
                 characterName = "Combatant sans nom"
             }
             display.gmSpeak(text: "\(characterName) est un combatant.")
-            //Crée obj et ajouter a une collec
+            var fighter: Fighter
+            fighter = Fighter(name: characterName)
+            characters.append(fighter)
         case "2":
             if characterName == "" {
                 characterName = "Mage sans nom"
             }
             display.gmSpeak(text: "\(characterName) est un mage.")
-            //Crée obj et ajouter a une collec
+            var magus: Magus
+            magus = Magus(name: characterName)
+            characters.append(magus)
         case "3":
             if characterName == "" {
                 characterName = "Colosse sans nom"
             }
             display.gmSpeak(text: "\(characterName) est un colosse.")
-            //Crée obj et ajouter a une collec
+            var colossus: Colossus
+            colossus = Colossus(name: characterName)
+            characters.append(colossus)
         case "4":
             if characterName == "" {
                 characterName = "Nain sans nom"
             }
             display.gmSpeak(text: "\(characterName) est un nain.")
-            //Crée obj et ajouter a une collec
+            var dwarf: Dwarf
+            dwarf = Dwarf(name: characterName)
+            characters.append(dwarf)
         default:
             if characterName == "" {
                 characterName = "Combatant sans nom"
             }
             display.gmSpeak(text: "\(characterName) est un combatant.")
-            //Crée obj et ajouter a une collec
+            var fighter: Fighter
+            fighter = Fighter(name: characterName)
+            characters.append(fighter)
         }
         nbCharacters += 1
-        //Reourner la collection de personnage.
     }
+    return characters
 }
 // TODO: Pourquoi pas en méthode static dans GameCharacters? mais c'est de l'affichange dans un class non dédié à ça.
 // TODO: Amélioré la lisibilitée
