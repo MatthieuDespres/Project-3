@@ -285,8 +285,7 @@ public class Round {
         self.actionType = actionType
         self.healthPoint =  activeCharacter.weapon.power
     }
-    //TODO: Trouver un nom plus cohérent.
-    public func executeAction() -> Round.ActionStatus {
+    public func playRound() -> Round.ActionStatus {
         switch actionType {
         case Round.ActionType.attack:
             return attack()
@@ -334,10 +333,9 @@ public class Round {
     }
 }
 // MARK: - Game
-// TODO: Idée, à l'initialisation, initialisé teams comme vide et faire les méthodes "createTeams", "addTeam".
 public class Game {
-    private var teams: [Team]
-    private var rounds: [Round]
+    public var teams: [Team]
+    public var rounds: [Round]
     private static let nbMaxTeam: Int = 2
     private var isOver: Bool {
         if findLooser() != nil {
@@ -378,10 +376,9 @@ public class Game {
 // MARK: - Display
 public class Display {
     private let interfaceLineLength: Int = 70
-    private let gameTitle: String
+    private let gameTitle: String = "Le choc des brutes"
     // MARK: Draw and Speak Methods
     public init() {
-        gameTitle = "Le choc des brutes"
         clearScreen()
     }
     public func sayWelcome() {
@@ -427,7 +424,7 @@ public class Display {
         drawLine(motif: "-")
         center(text: title)
         drawLine(motif: " ")
-        allignLeft2(lines: lines)
+        allignLeft(lines: lines)
         drawLine(motif: " ")
         drawLine(motif: "-")
     }
@@ -438,7 +435,6 @@ public class Display {
         drawLine(motif: " ")
         drawLine(motif: "-")
     }
-    // TODO: Comprendre ce bug pourquoi des fois il faut un -1 et pas d'autre.
     private func allignLeft(lines: [String]) {
         for line in lines {
             print("|\(prepareAllignLeft(text: line))|")
@@ -452,34 +448,19 @@ public class Display {
         }
         return lineText
     }
-    private func allignLeft2(lines: [String]) {
-        for line in lines {
-            print("|\(prepareAllignLeft2(text: line))|")
-        }
-    }
-    private func prepareAllignLeft2(text: String) -> String {
-        let suffix: Int = interfaceLineLength - text.count
-        var lineText: String = text
-        for _ in 1...suffix {
-            lineText += " "
-        }
-        return lineText
-    }
     public enum gmMood: String {
-        case normal = "📜"
+        case normal = "🧐"
         case error = "😡"
     }
     public func gmSpeak(text: String, mood: gmMood) {
         print("\(mood.rawValue) \(text)")
     }
-    // TODO: Amélioré la lisibilitée Un tableau par exemple.
     func showCharactersTypes() {
         var lines = [String]()
         lines.append("1-🤺 Combatant: Épée à la main, il incarne la polyvalence au combat.")
-        lines.append("2-🧙🏻‍♂️ Mage: Avec son baton il soigne les blessures de son équipe.")
-        lines.append("3-👨🏻‍🚀 Colosse: Protégé derrière son bouclier il est très résistant.")
-        lines.append("4-💂🏻‍♂️ Nain: Une hache à la main il est un tueur né.")
-        
+        lines.append("2-🧙🏻‍♂️ Mage     : Avec son baton il soigne les blessures de son équipe.")
+        lines.append("3-👨🏻‍🚀 Colosse  : Protégé derrière son bouclier il est très résistant.")
+        lines.append("4-💂🏻‍♂️ Nain     : Une hache à la main il est un tueur né.")
         drawFrameMultiLines(lines: lines)
     }
     // MARK: Read Methods
@@ -490,6 +471,10 @@ public class Display {
                 gmSpeak(text: "ERREUR: Le maitre du jeu apprécierait une réponse.", mood: Display.gmMood.error)
                 return readString()
             }
+            guard isGoodLenghtString(text: playerResponse) else {
+                gmSpeak(text: "ERREUR: On écris pas de roman hein!! 10 caractères c'est suffisant!", mood: Display.gmMood.error)
+                return readString()
+            }
             return playerResponse
         } else {
             gmSpeak(text: "ERREUR: Le maitre du jeu apprécierait une réponse.", mood: Display.gmMood.error)
@@ -497,6 +482,12 @@ public class Display {
         }
     }
     // TODO: Utilisation d'expression régulière pour éviter les saisie de "" ou " " ou "     "...
+    private func isGoodLenghtString(text: String) -> Bool {
+        guard text.count <= 10 else {
+            return false
+        }
+        return true
+    }
     private func isUsableString(text: String) -> Bool {
         guard text != "" && text != " " else {
             return false
@@ -533,17 +524,23 @@ public class Display {
 //==================================================
 // MARK: - Controller
 //==================================================
+public class MainController {
+    private var game: Game
+    private var startGameController: StartGameController
+    private var fightController: FightController
+    public init() {
+        self.game = Game()
+        startGameController = StartGameController(game: game)
+        fightController = FightController(game: game)
+    }
+}
 public class StartGameController {
     private var display: Display
     private var game: Game
-    public init() {
+    public init(game: Game) {
         self.display = Display()
-        self.game = Game()
+        self.game = game
         createTeams()
-        // TODO: Verrification complete si chaque objet a bien été crée.
-        // TODO: Améliorer l'affichage des personnages que ce soit beau et alligner.
-        print(game.rounds.count)
-        print(game.teams.count)
     }
     private func createTeams() {
         for numPlayer in 1...2 {
@@ -610,7 +607,17 @@ public class StartGameController {
         return characterLines
     }
     private func characterInfo(character: AnyObject) -> String {
-        return "\(getCharacterTypeIcone(character: character)) \((character as! GameCharacter).name) | ❤️ : \((character as! GameCharacter).health)"
+        let characterName: String = formatText(text: ((character as! GameCharacter).name), maxLength: 10)
+        let characterHealth: String = formatText(text: (String((character as! GameCharacter).health)), maxLength: 3)
+        //On veut les armes et les dégats
+        return "\(getCharacterTypeIcone(character: character)) \(characterName) ❤️ \(characterHealth)"
+    }
+    private func formatText(text: String, maxLength: Int) -> String {
+        var formatText: String = text
+        while formatText.count < maxLength {
+            formatText += " "
+        }
+        return formatText
     }
     private func getCharacterTypeIcone(character: AnyObject) -> String {
         var icon: String = ""
@@ -629,13 +636,35 @@ public class StartGameController {
         return icon
     }
     private func emptyLine() -> String {
-        return "En attente de recrutement."
+        return "📜 En attente de recrutement."
     }
     private func calculateEmptyLines(characterLines: [String]) -> Int {
         return (3 - characterLines.count) - 1
     }
 }
+public class FightController {
+    private var display: Display
+    private var game: Game
+    public init(game: Game) {
+        self.display = Display()
+        self.game = game
+        showTeams()
+        // TODO: Faire fonction qui cherche qui doit jouer.
+        // TODO: Faire une boucle de comba.
+    }
+    private func showTeams() {
+        for team in game.teams {
+            showTeam(team: team)
+        }
+    }
+    private func showTeam(team: Team) {
+        display.drawFrameOneLine(text: team.player)
+        // TODO: Dérouler chaque personnage
+        // TODO: Ajouter une ligne par personnage a une collection de lignes
+        // TODO: Afficher un tableau multiligne avec titres ou le titre est le nom du joueur.
+    }
+}
 //==================================================
 // MARK: - Main
 //==================================================
-var startGameController: StartGameController = StartGameController()
+var mainGameController: MainController = MainController()
