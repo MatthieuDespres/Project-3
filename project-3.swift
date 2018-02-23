@@ -378,13 +378,14 @@ public class Game {
 // MARK: - Display
 public class Display {
     private let interfaceLineLength: Int = 70
-    private let gameTitle: String = "Le choc des brutes"
+    private let gameTitle: String
     // MARK: Draw and Speak Methods
     public init() {
-        sayWelcome(welcomeWord: gameTitle)
+        gameTitle = "Le choc des brutes"
+        clearScreen()
     }
-    private func sayWelcome(welcomeWord: String) {
-        drawFrameOneLine(text: welcomeWord)
+    public func sayWelcome() {
+        drawFrameOneLine(text: gameTitle)
     }
     // TODO: question pour Ambroise Faire un méthode privé pour juste un if?
     public func drawLine(motif: String) {
@@ -400,9 +401,9 @@ public class Display {
         print(line)
     }
     private func center(text: String) {
-        print("|\(centerTextInString(text: text))|")
+        print("|\(prepareCenter(text: text))|")
     }
-    private func centerTextInString(text: String) -> String {
+    private func prepareCenter(text: String) -> String {
         let prefix: Int = (interfaceLineLength - text.count) / 2
         let suffix: Int = (interfaceLineLength - text.count - prefix)
         var lineText: String = ""
@@ -422,13 +423,47 @@ public class Display {
         drawLine(motif: " ")
         drawLine(motif: "-")
     }
-    public func drawFrameMultiLine(lines: [String]) {
+    public func drawFrameMultiLinesWithTitle(lines: [String], title: String) {
+        drawLine(motif: "-")
+        center(text: title)
+        drawLine(motif: " ")
+        allignLeft2(lines: lines)
+        drawLine(motif: " ")
+        drawLine(motif: "-")
+    }
+    private func drawFrameMultiLines(lines: [String]) {
         drawLine(motif: "-")
         drawLine(motif: " ")
-        //Méthode qui déroule chaque ligne.
-            //Sous méthode qui aligne le texte sur la gauche
+        allignLeft(lines: lines)
         drawLine(motif: " ")
         drawLine(motif: "-")
+    }
+    // TODO: Comprendre ce bug pourquoi des fois il faut un -1 et pas d'autre.
+    private func allignLeft(lines: [String]) {
+        for line in lines {
+            print("|\(prepareAllignLeft(text: line))|")
+        }
+    }
+    private func prepareAllignLeft(text: String) -> String {
+        let suffix: Int = interfaceLineLength - text.count - 1
+        var lineText: String = text
+        for _ in 1...suffix {
+            lineText += " "
+        }
+        return lineText
+    }
+    private func allignLeft2(lines: [String]) {
+        for line in lines {
+            print("|\(prepareAllignLeft2(text: line))|")
+        }
+    }
+    private func prepareAllignLeft2(text: String) -> String {
+        let suffix: Int = interfaceLineLength - text.count
+        var lineText: String = text
+        for _ in 1...suffix {
+            lineText += " "
+        }
+        return lineText
     }
     public enum gmMood: String {
         case normal = "📜"
@@ -439,7 +474,13 @@ public class Display {
     }
     // TODO: Amélioré la lisibilitée Un tableau par exemple.
     func showCharactersTypes() {
-        print(" 1-🤺 Combatant: Épée à la main, il incarne la polyvalence au combat.\n 2-🧙🏻‍♂️ Mage: Avec son baton il soigne les blessures de son équipe.\n 3-👨🏻‍🚀 Colosse: Protégé derrière son bouclier il est très résistant.\n 4-💂🏻‍♂️ Nain: Une hache à la main il est un tueur né.")
+        var lines = [String]()
+        lines.append("1-🤺 Combatant: Épée à la main, il incarne la polyvalence au combat.")
+        lines.append("2-🧙🏻‍♂️ Mage: Avec son baton il soigne les blessures de son équipe.")
+        lines.append("3-👨🏻‍🚀 Colosse: Protégé derrière son bouclier il est très résistant.")
+        lines.append("4-💂🏻‍♂️ Nain: Une hache à la main il est un tueur né.")
+        
+        drawFrameMultiLines(lines: lines)
     }
     // MARK: Read Methods
     // TODO: Ici clairement le else du if ne sert à rien mais j'arrive pas à l'enlever.
@@ -484,6 +525,10 @@ public class Display {
             print("\n")
         }
     }
+    public func clearAndTitle() {
+        clearScreen()
+        sayWelcome()
+    }
 }
 //==================================================
 // MARK: - Controller
@@ -495,61 +540,99 @@ public class StartGameController {
         self.display = Display()
         self.game = Game()
         createTeams()
+        // TODO: Verrification complete si chaque objet a bien été crée.
+        // TODO: Améliorer l'affichage des personnages que ce soit beau et alligner.
+        print(game.rounds.count)
+        print(game.teams.count)
     }
     private func createTeams() {
         for numPlayer in 1...2 {
-            var playerName: String
-            var team: Team
-            display.gmSpeak(text: "Nom Joueur \(numPlayer) : ", mood: Display.gmMood.normal)
-            playerName = display.readString()
-            team = Team(player: playerName, characters: createCharacters(numPlayer: numPlayer, playerName: playerName))
-            game.addTeam(team: team)
+            game.addTeam(team: createTeam(numPlayer: numPlayer))
         }
     }
-    // TODO: Découper en plusieurs sous fonctions.
-    //LE GM Parle
-    //Créer le nom d'un personnage
-    //Créer un personnage.
-    //Crée la collection de personnage
+    private func createTeam(numPlayer: Int) -> Team {
+        display.clearAndTitle()
+        let playerName: String = askPlayerName(numPlayer: numPlayer)
+        return Team(player: playerName, characters: createCharacters(numPlayer: numPlayer, playerName: playerName))
+    }
+    private func askPlayerName(numPlayer: Int) -> String {
+        display.gmSpeak(text: "Nom Joueur \(numPlayer) : ", mood: Display.gmMood.normal)
+        return display.readString()
+    }
     private func createCharacters(numPlayer: Int, playerName: String) -> [AnyObject] {
-        var characterNumber: Int
         var characters = [AnyObject]()
-        var word: [Int: String] = [1: "premier", 2: "second", 3: "dernier"]
-        display.gmSpeak(text:"\(playerName) il est temps de constituer ton équipe.", mood: Display.gmMood.normal)
+        let words: [Int: String] = [1: "premier", 2: "second", 3: "dernier"]
         for nbCharacters in 1...3 {
-            var characterName: String
-            display.gmSpeak(text: "Choisis le nom de ton \(word[nbCharacters]!) personnage :", mood: Display.gmMood.normal)
-            characterName = display.readString()
-            display.showCharactersTypes()
-            display.gmSpeak(text: "Choisis la classe de \(characterName), ton \(word[nbCharacters]!) personnage :", mood: Display.gmMood.normal)
-            characterNumber = display.readIntBetween(min: 1, max: 4)
-            // Refactoriser dans une méthode avec le nom et le type en parametre.
-            switch characterNumber {
-            case 1:
-                display.gmSpeak(text: "\(characterName) est un combatant.", mood: Display.gmMood.normal)
-                var fighter: Fighter
-                fighter = Fighter(name: characterName)
-                characters.append(fighter)
-            case 2:
-                display.gmSpeak(text: "\(characterName) est un mage.", mood: Display.gmMood.normal)
-                var magus: Magus
-                magus = Magus(name: characterName)
-                characters.append(magus)
-            case 3:
-                display.gmSpeak(text: "\(characterName) est un colosse.", mood: Display.gmMood.normal)
-                var colossus: Colossus
-                colossus = Colossus(name: characterName)
-                characters.append(colossus)
-            case 4:
-                display.gmSpeak(text: "\(characterName) est un nain.", mood: Display.gmMood.normal)
-                var dwarf: Dwarf
-                dwarf = Dwarf(name: characterName)
-                characters.append(dwarf)
-            default:
-                break
-            }
+            display.clearAndTitle()
+            display.drawFrameMultiLinesWithTitle(lines: charactersInfo(characters: characters), title: playerName)
+            let characterName: String = askCharacterName(words: words, nbCharacters: nbCharacters)
+            display.clearAndTitle()
+            display.drawFrameMultiLinesWithTitle(lines: charactersInfo(characters: characters), title: playerName)
+            let characterType: Int = askCharacterType(words: words, nbCharacters: nbCharacters, characterName: characterName)
+            characters.append(createCharacter(characterName: characterName, characterType: characterType))
         }
         return characters
+    }
+    private func askCharacterName(words: [Int: String], nbCharacters: Int) -> String {
+        display.gmSpeak(text: "Choisis le nom de ton \(words[nbCharacters]!) personnage :", mood: Display.gmMood.normal)
+        return display.readString()
+    }
+    private func askCharacterType(words: [Int: String], nbCharacters: Int, characterName: String) -> Int {
+        display.showCharactersTypes()
+        display.gmSpeak(text: "Choisis la classe de \(characterName), ton \(words[nbCharacters]!) personnage :", mood: Display.gmMood.normal)
+        return display.readIntBetween(min: 1, max: 4)
+    }
+    private func createCharacter(characterName: String, characterType: Int) -> AnyObject {
+        // TODO: ASK : Simplifier avec la reflexion?
+        switch characterType {
+        case 1:
+            return Fighter(name: characterName)
+        case 2:
+            return Magus(name: characterName)
+        case 3:
+            return Colossus(name: characterName)
+        case 4:
+            return Dwarf(name: characterName)
+        default:
+            break
+        }
+        // TODO: ASK: Im m'oblige un return ça fait chier.
+        return Fighter(name: characterName)
+    }
+    private func charactersInfo(characters: [AnyObject]) -> [String] {
+        var characterLines = [String]()
+        for character in characters {
+            characterLines.append(characterInfo(character: character))
+        }
+        for _ in 0...calculateEmptyLines(characterLines: characterLines) {
+            characterLines.append(emptyLine())
+        }
+        return characterLines
+    }
+    private func characterInfo(character: AnyObject) -> String {
+        return "\(getCharacterTypeIcone(character: character)) \((character as! GameCharacter).name) | ❤️ : \((character as! GameCharacter).health)"
+    }
+    private func getCharacterTypeIcone(character: AnyObject) -> String {
+        var icon: String = ""
+        switch String(describing: type(of: character)) {
+        case "Fighter":
+            icon = "🤺"
+        case "Magus":
+            icon = "🧙🏻‍♂️"
+        case "Colossus":
+            icon = "👨🏻‍🚀"
+        case "Dwarf":
+            icon = "💂🏻‍♂️"
+        default:
+            break
+        }
+        return icon
+    }
+    private func emptyLine() -> String {
+        return "En attente de recrutement."
+    }
+    private func calculateEmptyLines(characterLines: [String]) -> Int {
+        return (3 - characterLines.count) - 1
     }
 }
 //==================================================

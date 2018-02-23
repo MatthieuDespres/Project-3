@@ -71,4 +71,3 @@ afficherScore(equipe1: equipe1, equipe2: equipe2)
 /*
  * Verrifier que le personage actif appartien bien a l'équipe active et que le personage ciblé appartien bien a l'équipe ciblé.(Classe game)
  */
-
