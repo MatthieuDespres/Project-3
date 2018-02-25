@@ -163,9 +163,9 @@ public class Team {
     public var nbCharacterAlive: Int {
         return countCharacterAlive()
     }
-    public init(player: String, characters: [AnyObject]) {
+    public init(player: String) {
         self.player = player
-        self.characters = characters
+        self.characters = [AnyObject]()
     }
     private func countCharacterAlive() -> Int {
         var nbCharacterAlive: Int = 0
@@ -176,11 +176,14 @@ public class Team {
         }
         return nbCharacterAlive
     }
+    public func addCharacter(character: AnyObject) {
+        characters.append(character)
+    }
 }
 // MARK: - Weapon
 public class Weapon {
     public let category: Category
-    private let material: Material
+    public let material: Material
     private let totem: Totem
     public var power: Int {
         return getCategoryPower() + getMaterialPower()
@@ -369,6 +372,9 @@ public class Game {
         }
         return nil
     }
+    public func getLastCreatedTeam() -> Team {
+        return teams[teams.count - 1]
+    }
 }
 //==================================================
 // MARK: - View
@@ -384,7 +390,6 @@ public class Display {
     public func sayWelcome() {
         drawFrameOneLine(text: gameTitle)
     }
-    // TODO: question pour Ambroise Faire un méthode privé pour juste un if?
     public func drawLine(motif: String) {
         var line: String = ""
         var startAndStopMotif: String = "+"
@@ -463,6 +468,13 @@ public class Display {
         lines.append("4-💂🏻‍♂️ Nain     : Une hache à la main il est un tueur né.")
         drawFrameMultiLines(lines: lines)
     }
+    public func formatText(text: String, maxLength: Int) -> String {
+        var formatText: String = text
+        while formatText.count < maxLength {
+            formatText += " "
+        }
+        return formatText
+    }
     // MARK: Read Methods
     // TODO: Ici clairement le else du if ne sert à rien mais j'arrive pas à l'enlever.
     public func readString() -> String{
@@ -530,56 +542,55 @@ public class MainController {
     private var fightController: FightController
     public init() {
         self.game = Game()
+        // Etape 1.
         startGameController = StartGameController(game: game)
+        // Etape 2.
         fightController = FightController(game: game)
+        // Etape 3.
     }
 }
 public class StartGameController {
-    private var display: Display
     private var game: Game
+    private var display: Display
     public init(game: Game) {
         self.display = Display()
         self.game = game
-        createTeams()
+        createGame()
     }
-    private func createTeams() {
-        for numPlayer in 1...2 {
-            game.addTeam(team: createTeam(numPlayer: numPlayer))
+    private func createGame() {
+        while game.teams.count < 2 {
+            createTeam()
+            while game.getLastCreatedTeam().characters.count < 3 {
+                var character: AnyObject
+                character = createCharacter(playerName: game.getLastCreatedTeam().player)
+                game.getLastCreatedTeam().addCharacter(character: character)
+            }
         }
     }
-    private func createTeam(numPlayer: Int) -> Team {
+    private func createTeam() {
         display.clearAndTitle()
-        let playerName: String = askPlayerName(numPlayer: numPlayer)
-        return Team(player: playerName, characters: createCharacters(numPlayer: numPlayer, playerName: playerName))
+        let playerName: String = askPlayerName()
+        game.addTeam(team: Team(player: playerName))
     }
-    private func askPlayerName(numPlayer: Int) -> String {
-        display.gmSpeak(text: "Nom Joueur \(numPlayer) : ", mood: Display.gmMood.normal)
-        return display.readString()
-    }
-    private func createCharacters(numPlayer: Int, playerName: String) -> [AnyObject] {
-        var characters = [AnyObject]()
-        let words: [Int: String] = [1: "premier", 2: "second", 3: "dernier"]
-        for nbCharacters in 1...3 {
-            display.clearAndTitle()
-            display.drawFrameMultiLinesWithTitle(lines: charactersInfo(characters: characters), title: playerName)
-            let characterName: String = askCharacterName(words: words, nbCharacters: nbCharacters)
-            display.clearAndTitle()
-            display.drawFrameMultiLinesWithTitle(lines: charactersInfo(characters: characters), title: playerName)
-            let characterType: Int = askCharacterType(words: words, nbCharacters: nbCharacters, characterName: characterName)
-            characters.append(createCharacter(characterName: characterName, characterType: characterType))
+    private func askPlayerName() -> String {
+        display.gmSpeak(text: "Nom Joueur : ", mood: Display.gmMood.normal)
+        var playerName: String = display.readString()
+        if getAllPlayersNames().contains(playerName.uppercased()) {
+            display.gmSpeak(text: "ERREUR: Nom déja pris.", mood: Display.gmMood.error)
+            playerName = askPlayerName()
         }
-        return characters
+        return playerName
     }
-    private func askCharacterName(words: [Int: String], nbCharacters: Int) -> String {
-        display.gmSpeak(text: "Choisis le nom de ton \(words[nbCharacters]!) personnage :", mood: Display.gmMood.normal)
-        return display.readString()
+    private func createCharacter(playerName: String) ->AnyObject {
+        display.clearAndTitle()
+        showTeam(team: game.getLastCreatedTeam())
+        let characterName: String = askCharacterName()
+        display.clearAndTitle()
+        showTeam(team: game.getLastCreatedTeam())
+        let characterType: Int = askCharacterType(characterName: characterName)
+        return buildCharacter(characterName: characterName, characterType: characterType)
     }
-    private func askCharacterType(words: [Int: String], nbCharacters: Int, characterName: String) -> Int {
-        display.showCharactersTypes()
-        display.gmSpeak(text: "Choisis la classe de \(characterName), ton \(words[nbCharacters]!) personnage :", mood: Display.gmMood.normal)
-        return display.readIntBetween(min: 1, max: 4)
-    }
-    private func createCharacter(characterName: String, characterType: Int) -> AnyObject {
+    private func buildCharacter(characterName: String, characterType: Int) -> AnyObject {
         // TODO: ASK : Simplifier avec la reflexion?
         switch characterType {
         case 1:
@@ -596,30 +607,61 @@ public class StartGameController {
         // TODO: ASK: Im m'oblige un return ça fait chier.
         return Fighter(name: characterName)
     }
-    private func charactersInfo(characters: [AnyObject]) -> [String] {
-        var characterLines = [String]()
-        for character in characters {
-            characterLines.append(characterInfo(character: character))
+    private func askCharacterName() -> String {
+        display.gmSpeak(text: "Choisis le nom de ton personnage :", mood: Display.gmMood.normal)
+        var characterName: String = display.readString()
+        if getAllCharactersNames().contains(characterName.uppercased()) {
+            display.gmSpeak(text: "ERREUR: Un personnage porte déja le même nom.", mood: Display.gmMood.error)
+            characterName = askCharacterName()
         }
-        for _ in 0...calculateEmptyLines(characterLines: characterLines) {
-            characterLines.append(emptyLine())
+        return characterName
+    }
+    private func askCharacterType(characterName: String) -> Int {
+        display.showCharactersTypes()
+        display.gmSpeak(text: "Choisis la classe de \(characterName) :", mood: Display.gmMood.normal)
+        return display.readIntBetween(min: 1, max: 4)
+    }
+    private func getAllCharactersNames() -> [String] {
+        var allCharactersNames = [String]()
+        for team in game.teams {
+            for character in team.characters {
+                allCharactersNames.append(((character as! GameCharacter).name).uppercased())
+            }
         }
-        return characterLines
+        return allCharactersNames
+    }
+    private func getAllPlayersNames() -> [String] {
+        var allPlayersNames = [String]()
+        for team in game.teams {
+            allPlayersNames.append(team.player.uppercased())
+        }
+        return allPlayersNames
+    }
+    // TODO: Ces fonction sont en double avec celle IDENTIQUES de la classe FightsController.
+    // TODO: Meut être faire une classe Controller mère qui contiendrai ces fontion d'affichage des équipes?
+    private func showTeam(team: Team) {
+        var lines = [String]()
+        for character in team.characters {
+            lines.append(characterInfo(character: character))
+        }
+        while lines.count < 3 {
+            lines.append("📜 En attente de recrutement.")
+        }
+        display.drawFrameMultiLinesWithTitle(lines: lines, title: team.player)
     }
     private func characterInfo(character: AnyObject) -> String {
-        let characterName: String = formatText(text: ((character as! GameCharacter).name), maxLength: 10)
-        let characterHealth: String = formatText(text: (String((character as! GameCharacter).health)), maxLength: 3)
-        //On veut les armes et les dégats
-        return "\(getCharacterTypeIcone(character: character)) \(characterName) ❤️ \(characterHealth)"
-    }
-    private func formatText(text: String, maxLength: Int) -> String {
-        var formatText: String = text
-        while formatText.count < maxLength {
-            formatText += " "
+        let characterName: String = display.formatText(text: ((character as! GameCharacter).name), maxLength: 10)
+        let characterWeapon: String = (character as! GameCharacter).weapon.name
+        let characterPower: String = getAttackOrHealIcon(character: character) + display.formatText(text: (String((character as! GameCharacter).weapon.power)), maxLength: 4)
+        var characterHealth: String = "   "
+        var lifeIcon: String = "☠️ "
+        if (character as! GameCharacter).isAlive {
+            characterHealth = display.formatText(text: (String((character as! GameCharacter).health)), maxLength: 4)
+            lifeIcon = "❤️"
         }
-        return formatText
+        return "\(getCharacterTypeIcon(character: character)) \(characterName) \(lifeIcon) \(characterHealth) \(characterPower) \(characterWeapon)"
     }
-    private func getCharacterTypeIcone(character: AnyObject) -> String {
+    private func getCharacterTypeIcon(character: AnyObject) -> String {
         var icon: String = ""
         switch String(describing: type(of: character)) {
         case "Fighter":
@@ -635,33 +677,88 @@ public class StartGameController {
         }
         return icon
     }
-    private func emptyLine() -> String {
-        return "📜 En attente de recrutement."
-    }
-    private func calculateEmptyLines(characterLines: [String]) -> Int {
-        return (3 - characterLines.count) - 1
+    private func getAttackOrHealIcon(character: AnyObject) -> String {
+        var icon: String = "⚔️ "
+        if String(describing: type(of: character)) == "Magus" {
+            icon = "🌡 "
+        }
+        return icon
     }
 }
 public class FightController {
-    private var display: Display
     private var game: Game
+    private var display: Display
     public init(game: Game) {
         self.display = Display()
         self.game = game
+        display.clearAndTitle()
         showTeams()
-        // TODO: Faire fonction qui cherche qui doit jouer.
-        // TODO: Faire une boucle de comba.
+        // Tant qu'il n'y as pas de vainqueur, lancer un nouveau round. (while ...)
+            // Chercher quel joueur doit jouer.
+            // Afficher le tableaux des équipes.
+            // Afficher récap précédent round(s'il y as un roud précédents).
+            // Afficher le messsage d'erreur s'il y as eu une erreur.
+            //Demander quel personage controler.(le joueur tape le nom du personnage)
+                //Verrifier qu'on joue pas un personnage enemy (si la saisie fait partie de la collection de personnage du joueur actif)
+                //Un personnage mort ne peut pas jouer.
+            // Choisir le personnage cible.
+                //Verrifier que le personnage fait bien partie d'une des deux équipes.
+            // tenter de jouer le roud.
+                //Si erreur relancer le round depuis le début en envoyant en parametre le message d'erreur.
+        // Ajouter le round à la collection de round.
+        //Passer au controleur suivant
     }
     private func showTeams() {
         for team in game.teams {
             showTeam(team: team)
         }
     }
+    // TODO: Ces fonction sont en double avec celle IDENTIQUES de la classe FightsController.
+    // TODO: Meut être faire une classe DisplayController qui gererais les fonction d'affichage/données et le display.
     private func showTeam(team: Team) {
-        display.drawFrameOneLine(text: team.player)
-        // TODO: Dérouler chaque personnage
-        // TODO: Ajouter une ligne par personnage a une collection de lignes
-        // TODO: Afficher un tableau multiligne avec titres ou le titre est le nom du joueur.
+        var lines = [String]()
+        for character in team.characters {
+            lines.append(characterInfo(character: character))
+        }
+        while lines.count < 3 {
+            lines.append("📜 En attente de recrutement.")
+        }
+        display.drawFrameMultiLinesWithTitle(lines: lines, title: team.player)
+    }
+    private func characterInfo(character: AnyObject) -> String {
+        let characterName: String = display.formatText(text: ((character as! GameCharacter).name), maxLength: 10)
+        let characterWeapon: String = (character as! GameCharacter).weapon.name
+        let characterPower: String = getAttackOrHealIcon(character: character) + display.formatText(text: (String((character as! GameCharacter).weapon.power)), maxLength: 4)
+        var characterHealth: String = "   "
+        var lifeIcon: String = "☠️ "
+        if (character as! GameCharacter).isAlive {
+            characterHealth = display.formatText(text: (String((character as! GameCharacter).health)), maxLength: 4)
+            lifeIcon = "❤️"
+        }
+        return "\(getCharacterTypeIcon(character: character)) \(characterName) \(lifeIcon) \(characterHealth) \(characterPower) \(characterWeapon)"
+    }
+    private func getCharacterTypeIcon(character: AnyObject) -> String {
+        var icon: String = ""
+        switch String(describing: type(of: character)) {
+        case "Fighter":
+            icon = "🤺"
+        case "Magus":
+            icon = "🧙🏻‍♂️"
+        case "Colossus":
+            icon = "👨🏻‍🚀"
+        case "Dwarf":
+            icon = "💂🏻‍♂️"
+        default:
+            break
+        }
+        return icon
+    }
+    private func getAttackOrHealIcon(character: AnyObject) -> String {
+        var icon: String = "⚔️ "
+        if String(describing: type(of: character)) == "Magus" {
+            icon = "🌡 "
+        }
+        return icon
     }
 }
 //==================================================
