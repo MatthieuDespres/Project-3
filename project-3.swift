@@ -167,7 +167,7 @@ public class Team {
         self.player = player
         self.characters = [AnyObject]()
     }
-    private func countCharacterAlive() -> Int {
+    public func countCharacterAlive() -> Int {
         var nbCharacterAlive: Int = 0
         for character in characters {
             if (character as! GameCharacter).isAlive{
@@ -298,13 +298,17 @@ public class Round {
         case healDeadError = "ERREUR : La cible du soins est déja morte."
         case attackHimself = "ERREUR : Le personnage ne peut s'attaquer lui-même."
     }
-    public init(activeTeam: Team, targetTeam: Team, activeCharacter: GameCharacter, targetCharacter: GameCharacter, actionType: ActionType) {
+    public init(activeTeam: Team, targetTeam: Team, activeCharacter: GameCharacter, targetCharacter: GameCharacter) {
         self.activeTeam = activeTeam
         self.targetTeam = targetTeam
         self.activeCharacter = activeCharacter
         self.targetCharacter = targetCharacter
-        self.actionType = actionType
         self.healthPoint =  activeCharacter.weapon.power
+        if activeCharacter is Magus {
+            self.actionType = ActionType.heal
+        } else {
+            self.actionType = ActionType.attack
+        }
     }
     public func playRound() -> Round.ActionStatus {
         switch actionType {
@@ -358,12 +362,16 @@ public class Game {
     public var teams: [Team]
     public var rounds: [Round]
     private static let nbMaxTeam: Int = 2
-    private var isOver: Bool {
+    public var isOver: Bool {
         if findLooser() != nil {
             return true
         } else {
             return false
         }
+    }
+    public init() {
+        self.teams = [Team]()
+        self.rounds = [Round]()
     }
     public var isFirstRound: Bool {
         if getLastRound() == nil {
@@ -371,14 +379,13 @@ public class Game {
         }
         return false
     }
-    public init() {
-        self.teams = [Team]()
-        self.rounds = [Round]()
+    public func addRound(round: Round) {
+        rounds.append(round)
     }
     public func addTeam(team: Team) {
         teams.append(team)
     }
-    private func findWinner() -> Team? {
+    public func findWinner() -> Team? {
         for team in teams {
             if let loosingTeam = findLooser() {
                 if team.player != loosingTeam.player {
@@ -410,6 +417,18 @@ public class Game {
             }
         }
         return activeTeam
+    }
+    public func getInactiveTeam() -> Team {
+        // TODO: Relire dans le cour la comparaison d'objet pour éviter d'aller chercher le nom du joueur.
+        var inactiveTeam: Team = teams[1]
+        if !isFirstRound {
+            for team in teams {
+                if team.player == getLastRound()!.activeTeam.player {
+                    inactiveTeam = team
+                }
+            }
+        }
+        return inactiveTeam
     }
     public func getLastRound() -> Round? {
         guard rounds.count > 0 else {
@@ -605,6 +624,7 @@ public class MainController {
     private var game: Game
     private var startGameController: StartGameController
     private var fightController: FightController
+    private var endGameController: EndGameController
     public init() {
         self.game = Game()
         // Etape 1.
@@ -612,6 +632,7 @@ public class MainController {
         // Etape 2.
         fightController = FightController(game: game)
         // Etape 3.
+        endGameController = EndGameController(game: game)
     }
 }
 public class StartGameController {
@@ -743,10 +764,9 @@ public class StartGameController {
         }
         return icon
     }
-    // TODO: Utiliser les comparateur de types relire le cour.
     private func getAttackOrHealIcon(character: AnyObject) -> String {
         var icon: String = "⚔️ "
-        if String(describing: type(of: character)) == "Magus" {
+        if character is Magus {
             icon = "🌡 "
         }
         return icon
@@ -758,57 +778,75 @@ public class FightController {
     public init(game: Game) {
         self.display = Display()
         self.game = game
-        
-        
-        
-        // Déroulement d'un round.
-        // TODO: Mis en commentaire le temps des tests. while !game.isOver {}
-        display.clearAndTitle()
-        showTeams()
-        if !game.isFirstRound {
-            showLastRound()
+        // TODO: Quand l'équipe cible n'a plus qu'un seul personnage, le choisir automatiquement.
+        while !game.isOver {
+            game.addRound(round: createRound(error: ""))
         }
-        let activeTeam: Team = game.getActiveTeam()
-        // TODO: Gerer le coffre ici.
-        let activeCharacter: AnyObject = askActiveCharacter(activeTeam: activeTeam)
-        let targetCharacter: AnyObject = askTargetCharacter(activeCharacter: activeCharacter)
-        
-        
-        
-        
-        /*
-        // Round de test
-        let round1: Round = Round(activeTeam: game.teams[0], targetTeam: game.teams[1], activeCharacter: (game.teams[0].characters[0] as! GameCharacter), targetCharacter: (game.teams[1].characters[0] as! GameCharacter), actionType: Round.ActionType.attack)
-        game.rounds.append(round1)
-        print("Résultat du round : \(round1.playRound())")
-        activeTeam = game.getActiveTeam()
+    }
+    // TODO: A factoriser.
+    private func createRound(error: String) -> Round {
         display.clearAndTitle()
         showLastRound()
         showTeams()
-        */
-        
-        
-        
-        
-        
-        //Verrifier que le personnage fait bien partie d'une des deux équipes.
-        // tenter de jouer le roud.
-        //Si erreur afficher l'erreur, rafficher le récap et les équipes pour refaire un vrai choix.
-        // Ajouter le round à la collection de round si tjs pas d'erreur.
-        //Passer au controleur suivant
+        showError(error: error)
+        let activeTeam: Team = game.getActiveTeam()
+        // TODO: Gerer le coffre ici.
+        let activeCharacter: AnyObject = askActiveCharacter(activeTeam: activeTeam)
+        display.clearAndTitle()
+        showLastRound()
+        showTeams()
+        let targetCharacter: AnyObject = askTargetCharacter(activeTeam: activeTeam, activeCharacter: activeCharacter)
+        let targetTeam: Team
+        if activeCharacter is Magus {
+            targetTeam = activeTeam
+        } else {
+            targetTeam = game.getInactiveTeam()
+        }
+        let round: Round = Round(activeTeam: activeTeam, targetTeam: targetTeam, activeCharacter: (activeCharacter as! GameCharacter), targetCharacter: (targetCharacter as! GameCharacter))
+        if round.playRound() == Round.ActionStatus.noError {
+            return round
+        } else {
+            return createRound(error: "Tour annulé, recomence le tour.")
+        }
     }
-    private func askTargetCharacter(activeCharacter: AnyObject) -> AnyObject {
-        display.gmSpeak(text: "Choisis la cible de \((activeCharacter as! GameCharacter).name):", mood: Display.gmMood.normal)
-        // TODO: Si le personnage actif est un mage, le tableau de nom comportera les noms des personnages en vie de son équipe. Sinon la liste de personage enemy en vie.
-        // TODO: Lire le cour pour faire un verrification de la classe avec is ou as .
+    private func showError(error: String) {
+        if error != "" {
+            display.gmSpeak(text: "ERREUR: \(error):", mood: Display.gmMood.error)
+        }
+    }
+    // TODO: A FACTORISER
+    private func askTargetCharacter(activeTeam: Team, activeCharacter: AnyObject) -> AnyObject {
+        if activeCharacter is Magus {
+            if activeTeam.countCharacterAlive() == 1 {
+                return activeCharacter
+            } else {
+                display.gmSpeak(text: "Choisis la cible de \((activeCharacter as! GameCharacter).name):", mood: Display.gmMood.normal)
+                return activeTeam.getCharacter(name: display.readStringBetween(words: activeTeam.getCharactersAliveNames()))
+            }
+        } else {
+            let targetTeam: Team = game.getInactiveTeam()
+            if targetTeam.countCharacterAlive() == 1 {
+                return targetTeam.getCharacter(name: targetTeam.getCharactersAliveNames()[0])
+            } else {
+                display.gmSpeak(text: "Choisis la cible de \((activeCharacter as! GameCharacter).name):", mood: Display.gmMood.normal)
+                return targetTeam.getCharacter(name: display.readStringBetween(words: targetTeam.getCharactersAliveNames()))
+            }
+        }
     }
     private func askActiveCharacter(activeTeam: Team) -> AnyObject {
-        display.gmSpeak(text: "\(activeTeam.player), choisis avec quel personnage tu veux jouer ce tour :", mood: Display.gmMood.normal)
-        return activeTeam.getCharacter(name: display.readStringBetween(words: activeTeam.getCharactersAliveNames()))
+        if activeTeam.countCharacterAlive() == 1 {
+            return activeTeam.getCharacter(name: activeTeam.getCharactersAliveNames()[0])
+        } else {
+            display.gmSpeak(text: "\(activeTeam.player), choisis avec quel personnage tu vas jouer ce tour :", mood: Display.gmMood.normal)
+            return activeTeam.getCharacter(name: display.readStringBetween(words: activeTeam.getCharactersAliveNames()))
+        }
     }
     private func showLastRound() {
-        let lastRound: Round = game.getLastRound()!
-        display.drawFrameOneLineWithTitle(text: "\(lastRound.activeCharacter.name) \(getAttackOrHealIcon(character: lastRound.activeCharacter)) \(lastRound.healthPoint) \(lastRound.targetCharacter.name)", title: "Récap'")
+        if !game.isFirstRound {
+            let lastRound: Round = game.getLastRound()!
+            display.drawFrameOneLineWithTitle(text: "\(lastRound.activeCharacter.name) \(getAttackOrHealIcon(character: lastRound.activeCharacter)) \(lastRound.healthPoint) \(lastRound.targetCharacter.name)", title: "Récap'")
+        }
+        
     }
     private func showTeams() {
         for team in game.teams {
@@ -854,13 +892,21 @@ public class FightController {
         }
         return icon
     }
-    // TODO: Utiliser les comparateur de types relire le cour.
     private func getAttackOrHealIcon(character: AnyObject) -> String {
         var icon: String = "⚔️ "
-        if String(describing: type(of: character)) == "Magus" {
+        if character is Magus {
             icon = "🌡 "
         }
         return icon
+    }
+}
+public class EndGameController {
+    private var game: Game
+    private var display: Display
+    public init(game: Game) {
+        self.display = Display()
+        self.game = game
+        print("Félicitation : \(game.findWinner()!.player), tu as gagner.")
     }
 }
 //==================================================
