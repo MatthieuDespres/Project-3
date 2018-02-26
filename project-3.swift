@@ -128,12 +128,6 @@ public class GameCharacter {
     public var healthMax: Int
     public var isAlive: Bool
     private static let characterHealthMax: Int = 0
-    public enum Job: String {
-        case fighter = "combatant"
-        case magus = "mage"
-        case colossus = "colosse"
-        case dwarf = "nain"
-    }
     public init(name: String) {
         self.name = name
         health = GameCharacter.characterHealthMax
@@ -690,7 +684,7 @@ public class StartGameController {
         default:
             break
         }
-        // TODO: ASK: Im m'oblige un return ça fait chier.
+        // TODO: ASK: Im m'oblige un return et je sais pas comment l'enlever.
         return Fighter(name: characterName)
     }
     private func askCharacterName() -> String {
@@ -778,7 +772,6 @@ public class FightController {
     public init(game: Game) {
         self.display = Display()
         self.game = game
-        // TODO: Quand l'équipe cible n'a plus qu'un seul personnage, le choisir automatiquement.
         while !game.isOver {
             game.addRound(round: createRound(error: ""))
         }
@@ -853,7 +846,7 @@ public class FightController {
             showTeam(team: team)
         }
     }
-    // TODO: Ces fonction sont en double avec celle IDENTIQUES de la classe FightsController lire les commentaires la haut.
+    // TODO: Ces fonction sont en double avec celle IDENTIQUES de la classe StartGameController lire les commentaires dans StartGameController.
     private func showTeam(team: Team) {
         var lines = [String]()
         for character in team.characters {
