@@ -776,25 +776,15 @@ public class FightController {
             game.addRound(round: createRound(error: ""))
         }
     }
-    // TODO: A factoriser.
     private func createRound(error: String) -> Round {
-        display.clearAndTitle()
-        showLastRound()
-        showTeams()
+        showInterface()
         showError(error: error)
         let activeTeam: Team = game.getActiveTeam()
         // TODO: Gerer le coffre ici.
         let activeCharacter: AnyObject = askActiveCharacter(activeTeam: activeTeam)
-        display.clearAndTitle()
-        showLastRound()
-        showTeams()
+        showInterface()
         let targetCharacter: AnyObject = askTargetCharacter(activeTeam: activeTeam, activeCharacter: activeCharacter)
-        let targetTeam: Team
-        if activeCharacter is Magus {
-            targetTeam = activeTeam
-        } else {
-            targetTeam = game.getInactiveTeam()
-        }
+        let targetTeam: Team = getTargetTeam(activeTeam: activeTeam, activeCharacter: activeCharacter)
         let round: Round = Round(activeTeam: activeTeam, targetTeam: targetTeam, activeCharacter: (activeCharacter as! GameCharacter), targetCharacter: (targetCharacter as! GameCharacter))
         if round.playRound() == Round.ActionStatus.noError {
             return round
@@ -802,12 +792,26 @@ public class FightController {
             return createRound(error: "Tour annulé, recomence le tour.")
         }
     }
+    private func showInterface() {
+        display.clearAndTitle()
+        showLastRound()
+        showTeams()
+    }
     private func showError(error: String) {
         if error != "" {
             display.gmSpeak(text: "ERREUR: \(error):", mood: Display.gmMood.error)
         }
     }
-    // TODO: A FACTORISER
+    private func getTargetTeam(activeTeam: Team, activeCharacter: AnyObject) -> Team {
+        var targetTeam: Team
+        if activeCharacter is Magus {
+            targetTeam = activeTeam
+        } else {
+            targetTeam = game.getInactiveTeam()
+        }
+        return targetTeam
+    }
+    // TODO: A FACTORISER peut etre avec un nom genre autoSelect.
     private func askTargetCharacter(activeTeam: Team, activeCharacter: AnyObject) -> AnyObject {
         if activeCharacter is Magus {
             if activeTeam.countCharacterAlive() == 1 {
@@ -900,6 +904,9 @@ public class EndGameController {
         self.display = Display()
         self.game = game
         print("Félicitation : \(game.findWinner()!.player), tu as gagner.")
+        // TODO: clearAndTitle
+        // TODO: Affichage des score par équipe.
+        // TODO: Félicité le vainqueur.
     }
 }
 //==================================================
