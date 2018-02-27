@@ -1,4 +1,10 @@
+// TODO: Retirer tout les TODO.
+// TODO: Essayer tant que possible d'utiliser des AnyObject.
+// TODO: Chercher les méthodes inutilisé.
+// TODO: Relire le cours sur la porté des méthodes tout ne doit pas etre public ou privé.
+// TODO: Quand cela arrive , expliquer au joueur qu'on a automatiquement choisis le personage actif et ou le personnage cible.
 import Foundation
+
 //==================================================
 // MARK: - Model
 //==================================================
@@ -210,6 +216,7 @@ public class Team {
         characters.append(character)
     }
     
+    // TODO: Retourner un GameCharacter
     public func getCharacter(name: String) -> AnyObject {
         var characterFind: AnyObject = characters[0]
         for character in characters {
@@ -230,14 +237,22 @@ public class Team {
         return names
     }
     
-    public func getCharactersCanEquipWeapon(weapon: Weapon) -> [String] {
-        var charactersCanEquip = [String]()
+    public func getCharactersNamesCanEquip(weapon: Weapon) -> [String] {
+        var names = [String]()
+        for character in getCharacterCanEquip(weapon: weapon) {
+            names.append(character.name.uppercased())
+        }
+        return names
+    }
+    
+    public func getCharacterCanEquip(weapon: Weapon) -> [GameCharacter] {
+        var characterCanEquip = [GameCharacter]()
         for character in characters {
-            if (character as! GameCharacter).checkUse(weapon: weapon) {
-                charactersCanEquip.append((character as! GameCharacter).name.uppercased())
+            if (character as! GameCharacter).isAlive && (character as! GameCharacter).checkUse(weapon: weapon) {
+                characterCanEquip.append((character as! GameCharacter))
             }
         }
-        return charactersCanEquip
+        return characterCanEquip
     }
 }
 
@@ -582,7 +597,7 @@ public class Display {
         drawLine(motif: "-")
     }
     
-    private func drawFrameMultiLines(lines: [String]) {
+    public func drawFrameMultiLines(lines: [String]) {
         drawLine(motif: "-")
         drawLine(motif: " ")
         allignLeft(lines: lines)
@@ -706,7 +721,7 @@ public class Display {
     
     // MARK: Clear Methods
     public func clearScreen() {
-        for _ in 1...20 {
+        for _ in 1...40 {
             print("\n")
         }
     }
@@ -899,12 +914,10 @@ public class FightController {
         }
     }
     
+    // TODO: Factoriser
     private func createRound(error: String) -> Round {
         let activeTeam: Team = game.getActiveTeam()
-        
-        // TODO: Gerer le coffre ici.
-        //findChest(activeTeam: activeTeam)
-        
+        findChest(activeTeam: activeTeam)
         showInterface()
         showError(error: error)
         let activeCharacter: AnyObject = askActiveCharacter(activeTeam: activeTeam)
@@ -919,19 +932,28 @@ public class FightController {
         }
     }
     
+    // TODO: Factoriser
     private func findChest(activeTeam: Team) {
         if game.isChestAvailable() {
             let weapon: Weapon = game.openChest()
-            var charactersCanEquip = activeTeam.getCharactersCanEquipWeapon(weapon: weapon)
-            if charactersCanEquip.count > 0 {
+            let characters = activeTeam.getCharacterCanEquip(weapon: weapon)
+            var charactersNames = activeTeam.getCharactersNamesCanEquip(weapon: weapon)
+            if characters.count > 0 {
                 display.clearAndTitle()
-                display.drawFrameOneLineWithTitle(text: weapon.name, title: "Coffre au trésor")
-                // TODO: Dans un second cadre, présenter les personnages qui peuvent équiper l'arme.
-                showCharactersCanEquip(characters: charactersCanEquip, team: activeTeam)
-                
-                charactersCanEquip.append("NON")
-                let playerResponse: String = display.readStringBetween(words: charactersCanEquip)
+                display.drawFrameOneLineWithTitle(text: "\(getWeaponIcon(weapon: weapon))\(weapon.power) : \(weapon.name)", title: "Coffre au trésor")
+                showSelected(characters: characters)
+                charactersNames.append("NON")
+                if characters.count == 1 {
+                    charactersNames.append("OUI")
+                    display.gmSpeak(text: "Equiper l'arme ? :", mood: Display.gmMood.normal)
+                } else {
+                    display.gmSpeak(text: "Sur qui équiper l'arme ? (tape non detruire l'arme):", mood: Display.gmMood.normal)
+                }
+                var playerResponse: String = display.readStringBetween(words: charactersNames)
                 if playerResponse.uppercased() != "NON" {
+                    if playerResponse.uppercased() == "OUI" {
+                        playerResponse = characters[0].name
+                    }
                     let character = activeTeam.getCharacter(name: playerResponse)
                     (character as! GameCharacter).equip(weapon: weapon)
                 }
@@ -939,8 +961,20 @@ public class FightController {
         }
     }
     
-    private func showCharactersCanEquip(characters: [String], team: Team) {
-        // Faire une fonction qui renvoie un tableau de personnages qui peuvent équiper l'arme depui la classe team et utiliser les méthodes déja écrite pour afficher un tableau avec les info des personnages.
+    private func getWeaponIcon(weapon: Weapon) -> String {
+        var icon: String = "⚔️ "
+        if weapon.category == Weapon.Category.stick {
+            icon = "🌡 "
+        }
+        return icon
+    }
+    
+    private func showSelected(characters: [GameCharacter]) {
+        var lines = [String]()
+        for character in characters {
+            lines.append(characterInfo(character: character))
+        }
+        display.drawFrameMultiLines(lines: lines)
     }
     
     private func showInterface() {
