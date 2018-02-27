@@ -11,7 +11,7 @@ public class Colossus: Warrior {
         healthMax = Colossus.colossusHealthMax
         weapon = Colossus.createBaseWeapon()
     }
-    public func checkUse(weapon: Weapon) -> Bool {
+    public override func checkUse(weapon: Weapon) -> Bool {
         if weapon.category == Weapon.Category.shield {
             return true
         } else {
@@ -31,7 +31,7 @@ public class Dwarf: Warrior {
         healthMax = Dwarf.dwarfHealthMax
         weapon = Dwarf.createBaseWeapon()
     }
-    public func checkUse(weapon: Weapon) -> Bool {
+    public override func checkUse(weapon: Weapon) -> Bool {
         if weapon.category == Weapon.Category.ax {
             return true
         } else {
@@ -51,7 +51,7 @@ public class Fighter: Warrior {
         healthMax = Fighter.fighterHealthMax
         weapon = Fighter.createBaseWeapon()
     }
-    public func checkUse(weapon: Weapon) -> Bool {
+    public override func checkUse(weapon: Weapon) -> Bool {
         if weapon.category == Weapon.Category.sword {
             return true
         } else {
@@ -79,7 +79,7 @@ public class Magus: GameCharacter {
             return Round.ActionStatus.healDeadError
         }
     }
-    public func checkUse(weapon: Weapon) -> Bool {
+    public override func checkUse(weapon: Weapon) -> Bool {
         if weapon.category == Weapon.Category.stick {
             return true
         } else {
@@ -149,6 +149,13 @@ public class GameCharacter {
             return false
         }
     }
+    public func checkUse(weapon: Weapon) -> Bool {
+        if weapon.category == Weapon.Category.sword {
+            return true
+        } else {
+            return false
+        }
+    }
 }
 // MARK: - Team
 public class Team {
@@ -190,6 +197,15 @@ public class Team {
             }
         }
         return names
+    }
+    public func getCharactersCanEquipWeapon(weapon: Weapon) -> [String] {
+        var charactersCanEquip = [String]()
+        for character in characters {
+            if (character as! GameCharacter).checkUse(weapon: weapon) {
+                charactersCanEquip.append((character as! GameCharacter).name.uppercased())
+            }
+        }
+        return charactersCanEquip
     }
 }
 // MARK: - Weapon
@@ -319,16 +335,6 @@ public class Round {
             return false
         }
     }
-    private func isChestAvailable() -> Bool {
-        if Int(arc4random_uniform(UInt32(2))) > 0 {
-            return true
-        } else {
-            return false
-        }
-    }
-    private func openChest()-> Weapon {
-        return Weapon.createRandom()
-    }
     private func attack() -> Round.ActionStatus {
         guard activeCharacter.name != targetCharacter.name else {
             return Round.ActionStatus.attackHimself
@@ -429,6 +435,20 @@ public class Game {
             return nil
         }
         return rounds[rounds.count - 1]
+    }
+    public func isChestAvailable() -> Bool {
+        // TODO: Mis en commentaire pour les tests.
+        /*
+        if Int(arc4random_uniform(UInt32(2))) > 0 {
+            return true
+        } else {
+            return false
+        }
+         */
+        return true
+    }
+    public func openChest()-> Weapon {
+        return Weapon.createRandom()
     }
 }
 //==================================================
@@ -777,10 +797,13 @@ public class FightController {
         }
     }
     private func createRound(error: String) -> Round {
+        let activeTeam: Team = game.getActiveTeam()
+        
+        // TODO: Gerer le coffre ici.
+        //findChest(activeTeam: activeTeam)
+        
         showInterface()
         showError(error: error)
-        let activeTeam: Team = game.getActiveTeam()
-        // TODO: Gerer le coffre ici.
         let activeCharacter: AnyObject = askActiveCharacter(activeTeam: activeTeam)
         showInterface()
         let targetCharacter: AnyObject = askTargetCharacter(activeTeam: activeTeam, activeCharacter: activeCharacter)
@@ -791,6 +814,28 @@ public class FightController {
         } else {
             return createRound(error: "Tour annulé, recomence le tour.")
         }
+    }
+    private func findChest(activeTeam: Team) {
+        if game.isChestAvailable() {
+            let weapon: Weapon = game.openChest()
+            var charactersCanEquip = activeTeam.getCharactersCanEquipWeapon(weapon: weapon)
+            if charactersCanEquip.count > 0 {
+                display.clearAndTitle()
+                display.drawFrameOneLineWithTitle(text: weapon.name, title: "Coffre au trésor")
+                // TODO: Dans un second cadre, présenter les personnages qui peuvent équiper l'arme.
+                showCharactersCanEquip(characters: charactersCanEquip, team: activeTeam)
+                
+                charactersCanEquip.append("NON")
+                let playerResponse: String = display.readStringBetween(words: charactersCanEquip)
+                if playerResponse.uppercased() != "NON" {
+                    let character = activeTeam.getCharacter(name: playerResponse)
+                    (character as! GameCharacter).equip(weapon: weapon)
+                }
+            }
+        }
+    }
+    private func showCharactersCanEquip(characters: [String], team: Team) {
+        // Faire une fonction qui renvoie un tableau de personnages qui peuvent équiper l'arme depui la classe team et utiliser les méthodes déja écrite pour afficher un tableau avec les info des personnages.
     }
     private func showInterface() {
         display.clearAndTitle()
