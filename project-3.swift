@@ -507,19 +507,30 @@ public class Game {
     }
     
     public func isChestAvailable() -> Bool {
-        // TODO: Mis en commentaire pour les tests.
-        /*
         if Int(arc4random_uniform(UInt32(2))) > 0 {
             return true
         } else {
             return false
         }
-         */
-        return true
     }
     
     public func openChest()-> Weapon {
         return Weapon.createRandom()
+    }
+    
+    public func calculateScore(team: Team) -> [String: Int] {
+        var scores: [String: Int] = ["attack": 0, "heal": 0]
+        for round in rounds {
+            if team.player == round.activeTeam.player {
+                switch round.actionType {
+                case Round.ActionType.attack:
+                    scores["attack"] = scores["attack"]! + round.healthPoint
+                case Round.ActionType.heal:
+                    scores["heal"] = scores["heal"]! + round.healthPoint
+                }
+            }
+        }
+        return scores
     }
 }
 
@@ -647,24 +658,20 @@ public class Display {
     }
     
     // MARK: Read Methods
-    // TODO: Ici clairement le else ne sert à rien mais j'arrive pas à l'enlever.
     public func readString() -> String{
-        // Utiliser un guard pour le premier IF.
-        if let playerResponse = readLine() {
-            //isAusableStrin -> not empty string
-            guard isUsableString(text: playerResponse) else {
-                gmSpeak(text: "ERREUR: Le maitre du jeu apprécierait une réponse.", mood: Display.gmMood.error)
-                return readString()
-            }
-            guard isGoodLenghtString(text: playerResponse) else {
-                gmSpeak(text: "ERREUR: On écris pas de roman hein!! 10 caractères c'est suffisant!", mood: Display.gmMood.error)
-                return readString()
-            }
-            return playerResponse
-        } else {
+        guard let playerResponse = readLine() else {
             gmSpeak(text: "ERREUR: Le maitre du jeu apprécierait une réponse.", mood: Display.gmMood.error)
             return readString()
         }
+        guard isNotEmpty(text: playerResponse) else {
+            gmSpeak(text: "ERREUR: Le maitre du jeu apprécierait une réponse.", mood: Display.gmMood.error)
+            return readString()
+        }
+        guard isGoodLenghtString(text: playerResponse) else {
+            gmSpeak(text: "ERREUR: On écris pas de roman hein!! 10 caractères c'est suffisant!", mood: Display.gmMood.error)
+            return readString()
+        }
+        return playerResponse
     }
     
     public func readStringBetween(words: [String]) -> String {
@@ -685,7 +692,7 @@ public class Display {
     }
     
     // TODO: Utilisation d'expression régulière pour éviter les saisie de "" ou " " ou "     "...
-    // chercher peut etre un meilleur nom
+    // TODO: Chercher peut etre un meilleur nom
     private func isGoodLenghtString(text: String) -> Bool {
         guard text.count <= 10 else {
             return false
@@ -693,21 +700,19 @@ public class Display {
         return true
     }
     
-    private func isUsableString(text: String) -> Bool {
+    private func isNotEmpty(text: String) -> Bool {
         guard text != "" && text != " " else {
             return false
         }
         return true
     }
     
-    // TODO : utiliser guard.
     public func readInt() -> Int {
-        if let playerInt = Int(readString()) {
-            return playerInt
-        } else {
+        guard let playerInt = Int(readString()) else {
             gmSpeak(text: "ERREUR: Ici la réponse appropriée est un nombre.", mood: Display.gmMood.error)
             return readInt()
         }
+        return playerInt
     }
     
     public func readIntBetween(min: Int, max: Int) -> Int {
@@ -721,7 +726,7 @@ public class Display {
     
     // MARK: Clear Methods
     public func clearScreen() {
-        for _ in 1...40 {
+        for _ in 1...60 {
             print("\n")
         }
     }
@@ -736,29 +741,21 @@ public class Display {
 // MARK: - Controller
 //==================================================
 public class MainController {
-    private var game: Game
+    private var game: Game = Game()
     private var startGameController: StartGameController
     private var fightController: FightController
     private var endGameController: EndGameController
     
     public init() {
-        self.game = Game()
-        // Etape 1.
         startGameController = StartGameController(game: game)
-        // Etape 2.
         fightController = FightController(game: game)
-        // Etape 3.
         endGameController = EndGameController(game: game)
     }
 }
 
-public class StartGameController {
-    private var game: Game
-    private var display: Display
-    
-    public init(game: Game) {
-        self.display = Display()
-        self.game = game
+public class StartGameController: GameController {
+    public override init(game: Game) {
+        super.init(game: game)
         createGame()
     }
     
@@ -799,7 +796,7 @@ public class StartGameController {
         return buildCharacter(characterName: characterName, characterType: characterType)
     }
     
-    // Renvoyer GameCharacters (pas que ici mais en général
+    // TODO: Renvoyer GameCharacters (pas que ici mais en général
     private func buildCharacter(characterName: String, characterType: Int) -> AnyObject {
         switch characterType {
         case 1:
@@ -849,10 +846,7 @@ public class StartGameController {
         return allPlayersNames
     }
     
-    // TODO: Ces fonction sont en double avec celle IDENTIQUES de la classe FightsController.
-    // TODO: Peut être faire une classe Controller mère qui contiendrai ces fontion d'affichage des équipes? Ou faire un DisplayController ?
-    // TODO: Peut etre que l'héritage est pas mal ça permettrais de réécrire la méthode showTeam pour ajouter "En attente de recrutement".
-    private func showTeam(team: Team) {
+    public override func showTeam(team: Team) {
         var lines = [String]()
         for character in team.characters {
             lines.append(characterInfo(character: character))
@@ -862,53 +856,11 @@ public class StartGameController {
         }
         display.drawFrameMultiLinesWithTitle(lines: lines, title: team.player)
     }
-    
-    private func characterInfo(character: AnyObject) -> String {
-        let characterName: String = display.formatText(text: ((character as! GameCharacter).name), maxLength: 10)
-        let characterWeapon: String = (character as! GameCharacter).weapon.name
-        let characterPower: String = getAttackOrHealIcon(character: character) + display.formatText(text: (String((character as! GameCharacter).weapon.power)), maxLength: 4)
-        var characterHealth: String = "   "
-        var lifeIcon: String = "☠️ "
-        if (character as! GameCharacter).isAlive {
-            characterHealth = display.formatText(text: (String((character as! GameCharacter).health)), maxLength: 4)
-            lifeIcon = "❤️"
-        }
-        return "\(getCharacterTypeIcon(character: character)) \(characterName) \(lifeIcon) \(characterHealth) \(characterPower) \(characterWeapon)"
-    }
-    
-    private func getCharacterTypeIcon(character: AnyObject) -> String {
-        var icon: String = ""
-        switch String(describing: type(of: character)) {
-        case "Fighter":
-            icon = "🤺"
-        case "Magus":
-            icon = "🧙🏻‍♂️"
-        case "Colossus":
-            icon = "👨🏻‍🚀"
-        case "Dwarf":
-            icon = "💂🏻‍♂️"
-        default:
-            break
-        }
-        return icon
-    }
-    
-    private func getAttackOrHealIcon(character: AnyObject) -> String {
-        var icon: String = "⚔️ "
-        if character is Magus {
-            icon = "🌡 "
-        }
-        return icon
-    }
 }
 
-public class FightController {
-    private var game: Game
-    private var display: Display
-    
-    public init(game: Game) {
-        self.display = Display()
-        self.game = game
+public class FightController: GameController {
+    public override init(game: Game) {
+        super.init(game: game)
         while !game.isOver {
             game.addRound(round: createRound(error: ""))
         }
@@ -1042,20 +994,46 @@ public class FightController {
             showTeam(team: team)
         }
     }
+}
+
+public class EndGameController: GameController {
+    public override init(game: Game) {
+        super.init(game: game)
+        display.clearAndTitle()
+        showScores()
+        display.gmSpeak(text: "Félicitation : \(game.findWinner()!.player), tu as gagné en \(game.rounds.count) tours avec un score de 3 kills à \((3 - game.findWinner()!.nbCharacterAlive)).\n\n", mood: Display.gmMood.normal)
+    }
     
-    // TODO: Ces fonction sont en double avec celle IDENTIQUES de la classe StartGameController lire les commentaires dans StartGameController.
-    private func showTeam(team: Team) {
+    // TODO: Factoriser.
+    private func showScores() {
+        var scores: [String: Int] = ["attack": 0, "heal": 0]
+        for team in game.teams {
+            let teamScore = game.calculateScore(team: team)
+            display.drawFrameOneLineWithTitle(text: "⚔️ \(teamScore["attack"]!) | 🌡 \(teamScore["heal"]!)", title: "Statistiques de l'équipe de \(team.player)")
+            scores["attack"] = scores["attack"]! + teamScore["attack"]!
+            scores["heal"] = scores["heal"]! + teamScore["heal"]!
+        }
+        display.drawFrameOneLineWithTitle(text: "⚔️ \(scores["attack"]!) | 🌡 \(scores["heal"]!)", title: "Statistiques globales")
+    }
+}
+
+public class GameController {
+    public var game: Game
+    public var display: Display = Display()
+    
+    public init(game: Game) {
+        self.game = game
+    }
+    
+    public func showTeam(team: Team) {
         var lines = [String]()
         for character in team.characters {
             lines.append(characterInfo(character: character))
         }
-        while lines.count < 3 {
-            lines.append("📜 En attente de recrutement.")
-        }
         display.drawFrameMultiLinesWithTitle(lines: lines, title: team.player)
     }
     
-    private func characterInfo(character: AnyObject) -> String {
+    public func characterInfo(character: AnyObject) -> String {
         let characterName: String = display.formatText(text: ((character as! GameCharacter).name), maxLength: 10)
         let characterWeapon: String = (character as! GameCharacter).weapon.name
         let characterPower: String = getAttackOrHealIcon(character: character) + display.formatText(text: (String((character as! GameCharacter).weapon.power)), maxLength: 4)
@@ -1068,7 +1046,7 @@ public class FightController {
         return "\(getCharacterTypeIcon(character: character)) \(characterName) \(lifeIcon) \(characterHealth) \(characterPower) \(characterWeapon)"
     }
     
-    private func getCharacterTypeIcon(character: AnyObject) -> String {
+    public func getCharacterTypeIcon(character: AnyObject) -> String {
         var icon: String = ""
         switch String(describing: type(of: character)) {
         case "Fighter":
@@ -1085,26 +1063,12 @@ public class FightController {
         return icon
     }
     
-    private func getAttackOrHealIcon(character: AnyObject) -> String {
+    public func getAttackOrHealIcon(character: AnyObject) -> String {
         var icon: String = "⚔️ "
         if character is Magus {
             icon = "🌡 "
         }
         return icon
-    }
-}
-
-public class EndGameController {
-    private var game: Game
-    private var display: Display
-    
-    public init(game: Game) {
-        self.display = Display()
-        self.game = game
-        print("Félicitation : \(game.findWinner()!.player), tu as gagné.")
-        // TODO: clearAndTitle
-        // TODO: Affichage des score par équipe.
-        // TODO: Félicité le vainqueur.
     }
 }
 
