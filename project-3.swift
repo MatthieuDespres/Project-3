@@ -1,10 +1,7 @@
 // TODO: Retirer tout les TODO.
 // TODO: Chercher les méthodes inutilisé.
 // TODO: Relire le cours sur la porté des méthodes tout ne doit pas etre public ou privé.
-/* Public (public) : les éléments publiques sont accessibles partout depuis n'importe quel module et n'importe quel fichier.
-Interne (internal) : les éléments internes sont accessibles dans tous les fichiers du module dans lequel ils se trouvent. En revanche, ils ne sont pas accessibles à l'extérieur de ce module.
-Privé au fichier (fileprivate) : les éléments privés au fichier ne sont accessibles que dans le fichier dans lequel ils sont définis.
-Privé (private) : les éléments privés ne sont accessibles que dans le contexte dans lequel ils sont définis. Par exemple, si une méthode est privée, elle ne pourra être utilisée qu'à l'intérieur de la classe dans laquelle elle se trouve.*/
+/* (fileprivate) : les éléments privés au fichier ne sont accessibles que dans le fichier dans lequel ils sont définis.*/
 // TODO: Quand cela arrive , expliquer au joueur qu'on a automatiquement choisis le personage actif et ou le personnage cible.
 import Foundation
 
