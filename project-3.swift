@@ -1,6 +1,10 @@
 // TODO: Retirer tout les TODO.
 // TODO: Chercher les méthodes inutilisé.
 // TODO: Quand cela arrive , expliquer au joueur qu'on a automatiquement choisis le personage actif et ou le personnage cible.
+// TODO: Dans le récap, ne pas afficher les points de dégats de l'arme du personnage mais les dégats réelement sbi ou soigné par la cible
+// TODO: Si dans une équipe il ne reste qu'un mage, la partie est perdu ( du coup le score final ne sera pas de 3 à X mais de 2 à X
+// TODO: Si l'arme trouvé est la meme que celle ou celles déja équiper ne pas proposer
+// TODO: Faire comprendre que c'est léquipe 2 qui créer son équipe apriori c pas claire xav a eu l'idée des couleurs
 import Foundation
 
 //==================================================
@@ -618,18 +622,14 @@ public class Display {
     }
     
     private func prepareAllignLeft(text: String) -> String {
-        let suffix: Int = interfaceLineLength - text.count - 2
+        let suffix: Int = interfaceLineLength - text.count
         var lineText: String = text
         
-        var nbEmpyChar: Int = 0
-        while nbEmpyChar <= suffix {
+        var nbEmpyChar: Int = 1
+        while nbEmpyChar < suffix {
             lineText += " "
             nbEmpyChar += 1
         }
-        
-        /*for _ in 1...suffix {
-            lineText += " "
-        }*/
         return lineText
     }
     
@@ -734,6 +734,11 @@ public class Display {
     public func clearAndTitle() {
         clearScreen()
         sayWelcome()
+    }
+    
+    // TODO: Pour faire une pause c'est faisable ou c'est vraiment pas propre?
+    public func littleBreak() {
+        _ = readLine()
     }
 }
 
@@ -953,10 +958,12 @@ public class FightController: GameController {
         return targetTeam
     }
     
-    // TODO: A expliquer a l'utilisateur.
+    // TODO: A factoriser
     private func askTargetCharacter(activeTeam: Team, activeCharacter: GameCharacter) -> GameCharacter {
         if activeCharacter is Magus {
             if activeTeam.countCharacterAlive() == 1 {
+                display.gmSpeak(text: "\(activeCharacter.name) est bien seul. Il soigne ses blessures.", mood: Display.gmMood.normal)
+                display.littleBreak()
                 return activeCharacter
             } else {
                 display.gmSpeak(text: "Choisis la cible de \(activeCharacter.name):", mood: Display.gmMood.normal)
@@ -965,7 +972,10 @@ public class FightController: GameController {
         } else {
             let targetTeam: Team = game.getInactiveTeam()
             if targetTeam.countCharacterAlive() == 1 {
-                return targetTeam.getCharacter(name: targetTeam.getCharactersAliveNames()[0])
+                let targetCharacter: GameCharacter = targetTeam.getCharacter(name: targetTeam.getCharactersAliveNames()[0])
+                display.gmSpeak(text: "Il ne reste que \(targetCharacter.name) à abattre.", mood: Display.gmMood.normal)
+                display.littleBreak()
+                return targetCharacter
             } else {
                 display.gmSpeak(text: "Choisis la cible de \(activeCharacter.name):", mood: Display.gmMood.normal)
                 return targetTeam.getCharacter(name: display.readStringBetween(words: targetTeam.getCharactersAliveNames()))
@@ -973,9 +983,13 @@ public class FightController: GameController {
         }
     }
     
+    // TODO: A factoriser
     private func askActiveCharacter(activeTeam: Team) -> GameCharacter {
         if activeTeam.countCharacterAlive() == 1 {
-            return activeTeam.getCharacter(name: activeTeam.getCharactersAliveNames()[0])
+            let activeCharacter: GameCharacter = activeTeam.getCharacter(name: activeTeam.getCharactersAliveNames()[0])
+            display.gmSpeak(text: "Tu n'as que \(activeCharacter.name) en vie.", mood: Display.gmMood.normal)
+            display.littleBreak()
+            return activeCharacter
         } else {
             display.gmSpeak(text: "\(activeTeam.player), choisis avec quel personnage tu vas jouer ce tour :", mood: Display.gmMood.normal)
             return activeTeam.getCharacter(name: display.readStringBetween(words: activeTeam.getCharactersAliveNames()))
