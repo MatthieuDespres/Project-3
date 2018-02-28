@@ -2,6 +2,10 @@
 // TODO: Essayer tant que possible d'utiliser des AnyObject.
 // TODO: Chercher les méthodes inutilisé.
 // TODO: Relire le cours sur la porté des méthodes tout ne doit pas etre public ou privé.
+/* Public (public) : les éléments publiques sont accessibles partout depuis n'importe quel module et n'importe quel fichier.
+Interne (internal) : les éléments internes sont accessibles dans tous les fichiers du module dans lequel ils se trouvent. En revanche, ils ne sont pas accessibles à l'extérieur de ce module.
+Privé au fichier (fileprivate) : les éléments privés au fichier ne sont accessibles que dans le fichier dans lequel ils sont définis.
+Privé (private) : les éléments privés ne sont accessibles que dans le contexte dans lequel ils sont définis. Par exemple, si une méthode est privée, elle ne pourra être utilisée qu'à l'intérieur de la classe dans laquelle elle se trouve.*/
 // TODO: Quand cela arrive , expliquer au joueur qu'on a automatiquement choisis le personage actif et ou le personnage cible.
 import Foundation
 
@@ -216,12 +220,11 @@ public class Team {
         characters.append(character)
     }
     
-    // TODO: Retourner un GameCharacter
-    public func getCharacter(name: String) -> AnyObject {
-        var characterFind: AnyObject = characters[0]
+    public func getCharacter(name: String) -> GameCharacter {
+        var characterFind: GameCharacter = (characters[0] as! GameCharacter)
         for character in characters {
             if (character as! GameCharacter).name.uppercased() == name.uppercased() {
-                characterFind = character
+                characterFind = (character as! GameCharacter)
             }
         }
         return characterFind
@@ -473,8 +476,8 @@ public class Game {
         return teams[teams.count - 1]
     }
     
+    // TODO: Modif avec comparaison d'objet
     public func getActiveTeam() -> Team {
-        // TODO: Relire dans le cour la comparaison d'objet pour éviter d'aller chercher le nom du joueur.
         var activeTeam: Team = teams[0]
         if !isFirstRound {
             for team in teams {
@@ -907,7 +910,7 @@ public class FightController: GameController {
                         playerResponse = characters[0].name
                     }
                     let character = activeTeam.getCharacter(name: playerResponse)
-                    (character as! GameCharacter).equip(weapon: weapon)
+                    character.equip(weapon: weapon)
                 }
             }
         }
