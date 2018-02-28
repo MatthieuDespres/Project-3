@@ -1,5 +1,4 @@
 // TODO: Retirer tout les TODO.
-// TODO: Essayer tant que possible d'utiliser des AnyObject.
 // TODO: Chercher les méthodes inutilisé.
 // TODO: Relire le cours sur la porté des méthodes tout ne doit pas etre public ou privé.
 /* Public (public) : les éléments publiques sont accessibles partout depuis n'importe quel module et n'importe quel fichier.
@@ -196,35 +195,35 @@ public class GameCharacter {
 // MARK: - Team
 public class Team {
     public let player: String
-    public var characters: [AnyObject]
+    public var characters: [GameCharacter]
     public var nbCharacterAlive: Int {
         return countCharacterAlive()
     }
     
     public init(player: String) {
         self.player = player
-        self.characters = [AnyObject]()
+        self.characters = [GameCharacter]()
     }
     
     public func countCharacterAlive() -> Int {
         var nbCharacterAlive: Int = 0
         for character in characters {
-            if (character as! GameCharacter).isAlive{
+            if character.isAlive{
                 nbCharacterAlive += 1
             }
         }
         return nbCharacterAlive
     }
     
-    public func addCharacter(character: AnyObject) {
+    public func addCharacter(character: GameCharacter) {
         characters.append(character)
     }
     
     public func getCharacter(name: String) -> GameCharacter {
-        var characterFind: GameCharacter = (characters[0] as! GameCharacter)
+        var characterFind: GameCharacter = characters[0]
         for character in characters {
-            if (character as! GameCharacter).name.uppercased() == name.uppercased() {
-                characterFind = (character as! GameCharacter)
+            if character.name.uppercased() == name.uppercased() {
+                characterFind = character
             }
         }
         return characterFind
@@ -233,8 +232,8 @@ public class Team {
     public func getCharactersAliveNames() -> [String] {
         var names = [String]()
         for character in characters {
-            if (character as! GameCharacter).isAlive {
-                names.append((character as! GameCharacter).name.uppercased())
+            if character.isAlive {
+                names.append(character.name.uppercased())
             }
         }
         return names
@@ -251,8 +250,8 @@ public class Team {
     public func getCharacterCanEquip(weapon: Weapon) -> [GameCharacter] {
         var characterCanEquip = [GameCharacter]()
         for character in characters {
-            if (character as! GameCharacter).isAlive && (character as! GameCharacter).checkUse(weapon: weapon) {
-                characterCanEquip.append((character as! GameCharacter))
+            if character.isAlive && character.checkUse(weapon: weapon) {
+                characterCanEquip.append(character)
             }
         }
         return characterCanEquip
@@ -476,7 +475,6 @@ public class Game {
         return teams[teams.count - 1]
     }
     
-    // TODO: Modif avec comparaison d'objet
     public func getActiveTeam() -> Team {
         var activeTeam: Team = teams[0]
         if !isFirstRound {
@@ -490,7 +488,6 @@ public class Game {
     }
     
     public func getInactiveTeam() -> Team {
-        // TODO: Relire dans le cour la comparaison d'objet pour éviter d'aller chercher le nom du joueur.
         var inactiveTeam: Team = teams[1]
         if !isFirstRound {
             for team in teams {
@@ -694,8 +691,6 @@ public class Display {
         return list
     }
     
-    // TODO: Utilisation d'expression régulière pour éviter les saisie de "" ou " " ou "     "...
-    // TODO: Chercher peut etre un meilleur nom
     private func isGoodLenghtString(text: String) -> Bool {
         guard text.count <= 10 else {
             return false
@@ -766,7 +761,7 @@ public class StartGameController: GameController {
         while game.teams.count < 2 {
             createTeam()
             while game.getLastCreatedTeam().characters.count < 3 {
-                var character: AnyObject
+                var character: GameCharacter
                 character = createCharacter(playerName: game.getLastCreatedTeam().player)
                 game.getLastCreatedTeam().addCharacter(character: character)
             }
@@ -789,7 +784,7 @@ public class StartGameController: GameController {
         return playerName
     }
     
-    private func createCharacter(playerName: String) ->AnyObject {
+    private func createCharacter(playerName: String) -> GameCharacter {
         display.clearAndTitle()
         showTeam(team: game.getLastCreatedTeam())
         let characterName: String = askCharacterName()
@@ -799,8 +794,7 @@ public class StartGameController: GameController {
         return buildCharacter(characterName: characterName, characterType: characterType)
     }
     
-    // TODO: Renvoyer GameCharacters (pas que ici mais en général
-    private func buildCharacter(characterName: String, characterType: Int) -> AnyObject {
+    private func buildCharacter(characterName: String, characterType: Int) -> GameCharacter {
         switch characterType {
         case 1:
             return Fighter(name: characterName)
@@ -835,7 +829,7 @@ public class StartGameController: GameController {
         var allCharactersNames = [String]()
         for team in game.teams {
             for character in team.characters {
-                allCharactersNames.append(((character as! GameCharacter).name).uppercased())
+                allCharactersNames.append((character.name).uppercased())
             }
         }
         return allCharactersNames
@@ -869,17 +863,16 @@ public class FightController: GameController {
         }
     }
     
-    // TODO: Factoriser
     private func createRound(error: String) -> Round {
         let activeTeam: Team = game.getActiveTeam()
         findChest(activeTeam: activeTeam)
         showInterface()
         showError(error: error)
-        let activeCharacter: AnyObject = askActiveCharacter(activeTeam: activeTeam)
+        let activeCharacter: GameCharacter = askActiveCharacter(activeTeam: activeTeam)
         showInterface()
-        let targetCharacter: AnyObject = askTargetCharacter(activeTeam: activeTeam, activeCharacter: activeCharacter)
+        let targetCharacter: GameCharacter = askTargetCharacter(activeTeam: activeTeam, activeCharacter: activeCharacter)
         let targetTeam: Team = getTargetTeam(activeTeam: activeTeam, activeCharacter: activeCharacter)
-        let round: Round = Round(activeTeam: activeTeam, targetTeam: targetTeam, activeCharacter: (activeCharacter as! GameCharacter), targetCharacter: (targetCharacter as! GameCharacter))
+        let round: Round = Round(activeTeam: activeTeam, targetTeam: targetTeam, activeCharacter: activeCharacter, targetCharacter: targetCharacter)
         if round.playRound() == Round.ActionStatus.noError {
             return round
         } else {
@@ -898,6 +891,8 @@ public class FightController: GameController {
                 display.drawFrameOneLineWithTitle(text: "\(getWeaponIcon(weapon: weapon))\(weapon.power) : \(weapon.name)", title: "Coffre au trésor")
                 showSelected(characters: characters)
                 charactersNames.append("NON")
+                
+                // One available.
                 if characters.count == 1 {
                     charactersNames.append("OUI")
                     display.gmSpeak(text: "Equiper l'arme ? :", mood: Display.gmMood.normal)
@@ -905,6 +900,8 @@ public class FightController: GameController {
                     display.gmSpeak(text: "Sur qui équiper l'arme ? (tape non detruire l'arme):", mood: Display.gmMood.normal)
                 }
                 var playerResponse: String = display.readStringBetween(words: charactersNames)
+                
+                // Equip weapon
                 if playerResponse.uppercased() != "NON" {
                     if playerResponse.uppercased() == "OUI" {
                         playerResponse = characters[0].name
@@ -944,7 +941,7 @@ public class FightController: GameController {
         }
     }
     
-    private func getTargetTeam(activeTeam: Team, activeCharacter: AnyObject) -> Team {
+    private func getTargetTeam(activeTeam: Team, activeCharacter: GameCharacter) -> Team {
         var targetTeam: Team
         if activeCharacter is Magus {
             targetTeam = activeTeam
@@ -954,14 +951,13 @@ public class FightController: GameController {
         return targetTeam
     }
     
-    // TODO: A FACTORISER peut etre avec un nom genre autoSelect.
     // TODO: A expliquer a l'utilisateur.
-    private func askTargetCharacter(activeTeam: Team, activeCharacter: AnyObject) -> AnyObject {
+    private func askTargetCharacter(activeTeam: Team, activeCharacter: GameCharacter) -> GameCharacter {
         if activeCharacter is Magus {
             if activeTeam.countCharacterAlive() == 1 {
                 return activeCharacter
             } else {
-                display.gmSpeak(text: "Choisis la cible de \((activeCharacter as! GameCharacter).name):", mood: Display.gmMood.normal)
+                display.gmSpeak(text: "Choisis la cible de \(activeCharacter.name):", mood: Display.gmMood.normal)
                 return activeTeam.getCharacter(name: display.readStringBetween(words: activeTeam.getCharactersAliveNames()))
             }
         } else {
@@ -969,13 +965,13 @@ public class FightController: GameController {
             if targetTeam.countCharacterAlive() == 1 {
                 return targetTeam.getCharacter(name: targetTeam.getCharactersAliveNames()[0])
             } else {
-                display.gmSpeak(text: "Choisis la cible de \((activeCharacter as! GameCharacter).name):", mood: Display.gmMood.normal)
+                display.gmSpeak(text: "Choisis la cible de \(activeCharacter.name):", mood: Display.gmMood.normal)
                 return targetTeam.getCharacter(name: display.readStringBetween(words: targetTeam.getCharactersAliveNames()))
             }
         }
     }
     
-    private func askActiveCharacter(activeTeam: Team) -> AnyObject {
+    private func askActiveCharacter(activeTeam: Team) -> GameCharacter {
         if activeTeam.countCharacterAlive() == 1 {
             return activeTeam.getCharacter(name: activeTeam.getCharactersAliveNames()[0])
         } else {
@@ -1007,7 +1003,6 @@ public class EndGameController: GameController {
         display.gmSpeak(text: "Félicitation : \(game.findWinner()!.player), tu as gagné en \(game.rounds.count) tours avec un score de 3 kills à \((3 - game.findWinner()!.nbCharacterAlive)).\n\n", mood: Display.gmMood.normal)
     }
     
-    // TODO: Factoriser.
     private func showScores() {
         var scores: [String: Int] = ["attack": 0, "heal": 0]
         for team in game.teams {
@@ -1036,20 +1031,20 @@ public class GameController {
         display.drawFrameMultiLinesWithTitle(lines: lines, title: team.player)
     }
     
-    public func characterInfo(character: AnyObject) -> String {
-        let characterName: String = display.formatText(text: ((character as! GameCharacter).name), maxLength: 10)
-        let characterWeapon: String = (character as! GameCharacter).weapon.name
-        let characterPower: String = getAttackOrHealIcon(character: character) + display.formatText(text: (String((character as! GameCharacter).weapon.power)), maxLength: 4)
+    public func characterInfo(character: GameCharacter) -> String {
+        let characterName: String = display.formatText(text: (character.name), maxLength: 10)
+        let characterWeapon: String = character.weapon.name
+        let characterPower: String = getAttackOrHealIcon(character: character) + display.formatText(text: (String(character.weapon.power)), maxLength: 4)
         var characterHealth: String = "   "
         var lifeIcon: String = "☠️ "
-        if (character as! GameCharacter).isAlive {
-            characterHealth = display.formatText(text: (String((character as! GameCharacter).health)), maxLength: 4)
+        if character.isAlive {
+            characterHealth = display.formatText(text: (String(character.health)), maxLength: 4)
             lifeIcon = "❤️"
         }
         return "\(getCharacterTypeIcon(character: character)) \(characterName) \(lifeIcon) \(characterHealth) \(characterPower) \(characterWeapon)"
     }
     
-    public func getCharacterTypeIcon(character: AnyObject) -> String {
+    public func getCharacterTypeIcon(character: GameCharacter) -> String {
         var icon: String = ""
         switch String(describing: type(of: character)) {
         case "Fighter":
@@ -1066,7 +1061,7 @@ public class GameController {
         return icon
     }
     
-    public func getAttackOrHealIcon(character: AnyObject) -> String {
+    public func getAttackOrHealIcon(character: GameCharacter) -> String {
         var icon: String = "⚔️ "
         if character is Magus {
             icon = "🌡 "
