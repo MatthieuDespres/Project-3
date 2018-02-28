@@ -5,6 +5,7 @@
 // TODO: Si dans une équipe il ne reste qu'un mage, la partie est perdu ( du coup le score final ne sera pas de 3 à X mais de 2 à X
 // TODO: Si l'arme trouvé est la meme que celle ou celles déja équiper ne pas proposer
 // TODO: Faire comprendre que c'est léquipe 2 qui créer son équipe apriori c pas claire xav a eu l'idée des couleurs
+// TODO: Faire des crédits a la fin du jeu.
 import Foundation
 
 //==================================================
@@ -567,6 +568,7 @@ public class Display {
         print("|\(prepareCenter(text: text))|")
     }
     
+    // TODO: Utiliser des while pour échaper les bugs
     private func prepareCenter(text: String) -> String {
         let prefix: Int = (interfaceLineLength - text.count) / 2
         let suffix: Int = (interfaceLineLength - text.count - prefix)
@@ -624,7 +626,6 @@ public class Display {
     private func prepareAllignLeft(text: String) -> String {
         let suffix: Int = interfaceLineLength - text.count
         var lineText: String = text
-        
         var nbEmpyChar: Int = 1
         while nbEmpyChar < suffix {
             lineText += " "
