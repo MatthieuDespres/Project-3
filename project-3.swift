@@ -1,7 +1,5 @@
 // TODO: Retirer tout les TODO.
 // TODO: Chercher les méthodes inutilisé.
-// TODO: Relire le cours sur la porté des méthodes tout ne doit pas etre public ou privé.
-/* (fileprivate) : les éléments privés au fichier ne sont accessibles que dans le fichier dans lequel ils sont définis.*/
 // TODO: Quand cela arrive , expliquer au joueur qu'on a automatiquement choisis le personage actif et ou le personnage cible.
 import Foundation
 
@@ -620,11 +618,18 @@ public class Display {
     }
     
     private func prepareAllignLeft(text: String) -> String {
-        let suffix: Int = interfaceLineLength - text.count - 1
+        let suffix: Int = interfaceLineLength - text.count - 2
         var lineText: String = text
-        for _ in 1...suffix {
+        
+        var nbEmpyChar: Int = 0
+        while nbEmpyChar <= suffix {
             lineText += " "
+            nbEmpyChar += 1
         }
+        
+        /*for _ in 1...suffix {
+            lineText += " "
+        }*/
         return lineText
     }
     
