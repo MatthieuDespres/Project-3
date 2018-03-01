@@ -1,11 +1,3 @@
-// TODO: Retirer tout les TODO.
-// TODO: Chercher les méthodes inutilisé.
-// TODO: Quand cela arrive , expliquer au joueur qu'on a automatiquement choisis le personage actif et ou le personnage cible.
-// TODO: Dans le récap, ne pas afficher les points de dégats de l'arme du personnage mais les dégats réelement sbi ou soigné par la cible
-// TODO: Si dans une équipe il ne reste qu'un mage, la partie est perdu ( du coup le score final ne sera pas de 3 à X mais de 2 à X
-// TODO: Si l'arme trouvé est la meme que celle ou celles déja équiper ne pas proposer
-// TODO: Faire comprendre que c'est léquipe 2 qui créer son équipe apriori c pas claire xav a eu l'idée des couleurs
-// TODO: Faire des crédits a la fin du jeu.
 import Foundation
 
 //==================================================
@@ -239,6 +231,16 @@ public class Team {
         return names
     }
     
+    public func getCharactersAlive() -> [GameCharacter] {
+        var charactersAlive = [GameCharacter]()
+        for character in characters {
+            if character.isAlive {
+                charactersAlive.append(character)
+            }
+        }
+        return charactersAlive
+    }
+    
     public func getCharactersNamesCanEquip(weapon: Weapon) -> [String] {
         var names = [String]()
         for character in getCharacterCanEquip(weapon: weapon) {
@@ -462,9 +464,12 @@ public class Game {
         return nil
     }
     
-    private func findLooser() -> Team? {
+    public func findLooser() -> Team? {
         for team in teams {
             if team.nbCharacterAlive == 0 {
+                return team
+            }
+            if team.nbCharacterAlive == 1 && (team.getCharactersAlive()[0] is Magus) {
                 return team
             }
         }
@@ -568,7 +573,6 @@ public class Display {
         print("|\(prepareCenter(text: text))|")
     }
     
-    // TODO: Utiliser des while pour échaper les bugs
     private func prepareCenter(text: String) -> String {
         let prefix: Int = (interfaceLineLength - text.count) / 2
         let suffix: Int = (interfaceLineLength - text.count - prefix)
@@ -737,7 +741,6 @@ public class Display {
         sayWelcome()
     }
     
-    // TODO: Pour faire une pause c'est faisable ou c'est vraiment pas propre?
     public func littleBreak() {
         _ = readLine()
     }
@@ -756,6 +759,61 @@ public class MainController {
         startGameController = StartGameController(game: game)
         fightController = FightController(game: game)
         endGameController = EndGameController(game: game)
+    }
+}
+
+public class GameController {
+    public var game: Game
+    public var display: Display = Display()
+    
+    public init(game: Game) {
+        self.game = game
+    }
+    
+    public func showTeam(team: Team) {
+        var lines = [String]()
+        for character in team.characters {
+            lines.append(characterInfo(character: character))
+        }
+        display.drawFrameMultiLinesWithTitle(lines: lines, title: team.player)
+    }
+    
+    public func characterInfo(character: GameCharacter) -> String {
+        let characterName: String = display.formatText(text: (character.name), maxLength: 10)
+        let characterWeapon: String = character.weapon.name
+        let characterPower: String = getAttackOrHealIcon(character: character) + display.formatText(text: (String(character.weapon.power)), maxLength: 4)
+        var characterHealth: String = "   "
+        var lifeIcon: String = "☠️ "
+        if character.isAlive {
+            characterHealth = display.formatText(text: (String(character.health)), maxLength: 4)
+            lifeIcon = "❤️"
+        }
+        return "\(getCharacterTypeIcon(character: character)) \(characterName) \(lifeIcon) \(characterHealth) \(characterPower) \(characterWeapon)"
+    }
+    
+    public func getCharacterTypeIcon(character: GameCharacter) -> String {
+        var icon: String = ""
+        switch String(describing: type(of: character)) {
+        case "Fighter":
+            icon = "🤺"
+        case "Magus":
+            icon = "🧙🏻‍♂️"
+        case "Colossus":
+            icon = "👨🏻‍🚀"
+        case "Dwarf":
+            icon = "💂🏻‍♂️"
+        default:
+            break
+        }
+        return icon
+    }
+    
+    public func getAttackOrHealIcon(character: GameCharacter) -> String {
+        var icon: String = "⚔️ "
+        if character is Magus {
+            icon = "🌡 "
+        }
+        return icon
     }
 }
 
@@ -888,36 +946,35 @@ public class FightController: GameController {
         }
     }
     
-    // TODO: Factoriser
     private func findChest(activeTeam: Team) {
         if game.isChestAvailable() {
             let weapon: Weapon = game.openChest()
             let characters = activeTeam.getCharacterCanEquip(weapon: weapon)
-            var charactersNames = activeTeam.getCharactersNamesCanEquip(weapon: weapon)
             if characters.count > 0 {
                 display.clearAndTitle()
                 display.drawFrameOneLineWithTitle(text: "\(getWeaponIcon(weapon: weapon))\(weapon.power) : \(weapon.name)", title: "Coffre au trésor")
                 showSelected(characters: characters)
-                charactersNames.append("NON")
-                
-                // One available.
-                if characters.count == 1 {
-                    charactersNames.append("OUI")
-                    display.gmSpeak(text: "Equiper l'arme ? :", mood: Display.gmMood.normal)
-                } else {
-                    display.gmSpeak(text: "Sur qui équiper l'arme ? (tape non detruire l'arme):", mood: Display.gmMood.normal)
-                }
-                var playerResponse: String = display.readStringBetween(words: charactersNames)
-                
-                // Equip weapon
-                if playerResponse.uppercased() != "NON" {
-                    if playerResponse.uppercased() == "OUI" {
-                        playerResponse = characters[0].name
-                    }
-                    let character = activeTeam.getCharacter(name: playerResponse)
-                    character.equip(weapon: weapon)
-                }
+                askEquipWeapon(characters: characters, weapon: weapon,activeTeam: activeTeam)
             }
+        }
+    }
+    
+    private func askEquipWeapon(characters: [GameCharacter], weapon: Weapon, activeTeam: Team) {
+        var charactersNames = activeTeam.getCharactersNamesCanEquip(weapon: weapon)
+        charactersNames.append("NON")
+        if characters.count == 1 {
+            charactersNames.append("OUI")
+            display.gmSpeak(text: "Equiper l'arme ? :", mood: Display.gmMood.normal)
+        } else {
+            display.gmSpeak(text: "Sur qui équiper l'arme ? (tape non detruire l'arme):", mood: Display.gmMood.normal)
+        }
+        var playerResponse: String = display.readStringBetween(words: charactersNames)
+        if playerResponse.uppercased() != "NON" {
+            if playerResponse.uppercased() == "OUI" {
+                playerResponse = characters[0].name
+            }
+            let character = activeTeam.getCharacter(name: playerResponse)
+            character.equip(weapon: weapon)
         }
     }
     
@@ -959,7 +1016,6 @@ public class FightController: GameController {
         return targetTeam
     }
     
-    // TODO: A factoriser
     private func askTargetCharacter(activeTeam: Team, activeCharacter: GameCharacter) -> GameCharacter {
         if activeCharacter is Magus {
             if activeTeam.countCharacterAlive() == 1 {
@@ -984,7 +1040,6 @@ public class FightController: GameController {
         }
     }
     
-    // TODO: A factoriser
     private func askActiveCharacter(activeTeam: Team) -> GameCharacter {
         if activeTeam.countCharacterAlive() == 1 {
             let activeCharacter: GameCharacter = activeTeam.getCharacter(name: activeTeam.getCharactersAliveNames()[0])
@@ -1017,7 +1072,7 @@ public class EndGameController: GameController {
         super.init(game: game)
         display.clearAndTitle()
         showScores()
-        display.gmSpeak(text: "Félicitation : \(game.findWinner()!.player), tu as gagné en \(game.rounds.count) tours avec un score de 3 kills à \((3 - game.findWinner()!.nbCharacterAlive)).\n\n", mood: Display.gmMood.normal)
+        display.gmSpeak(text: "Félicitation : \(game.findWinner()!.player), tu as gagné en \(game.rounds.count) tours avec un score de \((3 - game.findLooser()!.nbCharacterAlive)) kills à \((3 - game.findWinner()!.nbCharacterAlive)).\n\n", mood: Display.gmMood.normal)
     }
     
     private func showScores() {
@@ -1029,61 +1084,6 @@ public class EndGameController: GameController {
             scores["heal"] = scores["heal"]! + teamScore["heal"]!
         }
         display.drawFrameOneLineWithTitle(text: "⚔️ \(scores["attack"]!) | 🌡 \(scores["heal"]!)", title: "Statistiques globales")
-    }
-}
-
-public class GameController {
-    public var game: Game
-    public var display: Display = Display()
-    
-    public init(game: Game) {
-        self.game = game
-    }
-    
-    public func showTeam(team: Team) {
-        var lines = [String]()
-        for character in team.characters {
-            lines.append(characterInfo(character: character))
-        }
-        display.drawFrameMultiLinesWithTitle(lines: lines, title: team.player)
-    }
-    
-    public func characterInfo(character: GameCharacter) -> String {
-        let characterName: String = display.formatText(text: (character.name), maxLength: 10)
-        let characterWeapon: String = character.weapon.name
-        let characterPower: String = getAttackOrHealIcon(character: character) + display.formatText(text: (String(character.weapon.power)), maxLength: 4)
-        var characterHealth: String = "   "
-        var lifeIcon: String = "☠️ "
-        if character.isAlive {
-            characterHealth = display.formatText(text: (String(character.health)), maxLength: 4)
-            lifeIcon = "❤️"
-        }
-        return "\(getCharacterTypeIcon(character: character)) \(characterName) \(lifeIcon) \(characterHealth) \(characterPower) \(characterWeapon)"
-    }
-    
-    public func getCharacterTypeIcon(character: GameCharacter) -> String {
-        var icon: String = ""
-        switch String(describing: type(of: character)) {
-        case "Fighter":
-            icon = "🤺"
-        case "Magus":
-            icon = "🧙🏻‍♂️"
-        case "Colossus":
-            icon = "👨🏻‍🚀"
-        case "Dwarf":
-            icon = "💂🏻‍♂️"
-        default:
-            break
-        }
-        return icon
-    }
-    
-    public func getAttackOrHealIcon(character: GameCharacter) -> String {
-        var icon: String = "⚔️ "
-        if character is Magus {
-            icon = "🌡 "
-        }
-        return icon
     }
 }
 
